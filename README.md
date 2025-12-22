@@ -1,10 +1,20 @@
-Setup: py -m venv .venv && .venv\Scripts\Activate
-py -m pip install -r requirements.txt
-Run schema.sql in MySQL
-Copy .env.example -> .env (fill in DB creds)
-py app.py -> http://127.0.0.1:5000
+To run this project, open a terminal in VS Code and navigate to the project folder
 
-For my system: 
-cd 'C:\Users\herog\Downloads\VSCODE\exam\examreg'
-venv\Scripts\activate
+Create the virtual environment (this only needs to be done once):
+python -m venv .venv
+
+Activate the virtual environment (this must be done every time you open a new terminal):
+.venv\Scripts\activate
+
+You should see (.venv) at the start of the terminal line.
+
+Install the required Python packages (first time only, or if requirements.txt changes):
+python -m pip install -r requirements.txt
+
+Set up environment variables by copying the file named .env.example, renaming the copy to .env, and filling in your MySQL database credentials inside the .env file. Do not upload the .env file to GitHub.
+
+Open MySQL and run the schema.sql file to create the required database tables. This only needs to be done once.
+Start the application by running:
 python app.py
+
+If it starts successfully, open a browser and click on link provided in terminal.
