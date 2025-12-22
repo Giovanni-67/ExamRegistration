@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Restore saved theme BEFORE page renders -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    })();
+  </script>
+
+  <meta charset="utf-8" />
+  <title>Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- GOOGLE FONT -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *{ box-sizing: border-box; }
+
+    /* -----------------------------------------
+       🔵 DARK MODE SYSTEM (ADDED)
+       ----------------------------------------- */
+    :root {
+      --csn-blue: #00345f;
+      --csn-gold: #ffb81c;
+
+      --bg:#f5f7fa;
+      --fg:#111827;
+      --card-bg:#ffffff;
+      --border:#e5e7eb;
+      --subtext:#6b7280;
+
+      /* your originals preserved */
+      --bd:#e5e7eb;
+      --muted:#6b7280;
+      --blue:#2563eb;
+      --indigo:#4f46e5;
+    }
+    .dark-mode {
+      --bg:#0f172a;
+      --fg:#f3f4f6;
+      --card-bg:#1e293b;
+      --border:#334155;
+      --subtext:#cbd5e1;
+
+      --bd:#334155;
+    }
+
+    /* ----------------------------------------- */
+    body {
+      font-family:'Inter', system-ui, Arial, sans-serif;
+      background:var(--bg);
+      max-width:1100px;
+      margin:2rem auto;
+      padding:0 1rem;
+      color:var(--fg);
+    }
+
+    /* -----------------------------------------
+       🔵 TOGGLE BUTTON (ADDED)
+       ----------------------------------------- */
+    .toggle-container {
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:1rem;
+    }
+
+    .toggle-btn {
+      width:46px;
+      height:22px;
+      background:#d1d5db;
+      border-radius:999px;
+      position:relative;
+      cursor:pointer;
+    }
+    .toggle-circle {
+      width:18px;
+      height:18px;
+      background:white;
+      border-radius:50%;
+      position:absolute;
+      top:2px;
+      left:3px;
+      transition:all 0.25s ease;
+    }
+    .dark-mode .toggle-circle {
+      transform:translateX(24px);
+    }
+
+    /* ----------------------------------------- */
+
+    h1 {
+      font-size:28px;
+      font-weight:700;
+      margin:0 0 1rem 0;
+      background:linear-gradient(to right,var(--blue),var(--indigo));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+
+    .panel {
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px 20px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom:1rem;
+      font-size:14px;
+      color:var(--fg);
+    }
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:var(--card-bg);
+      font-size:13px;
+      font-weight:600;
+      text-decoration:none;
+      box-shadow:0 1px 3px rgba(0,0,0,0.07);
+      cursor:pointer;
+      transition:0.15s ease;
+      color:var(--fg);
+    }
+    .btn:hover {
+      background:#f3f4f6;
+      transform:translateY(-1px);
+      box-shadow:0 3px 5px rgba(0,0,0,0.1);
+    }
+
+    ul.messages {
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      border-left:4px solid var(--blue);
+      border-radius:10px;
+      padding:10px 16px;
+      margin:0 0 1rem;
+      list-style:none;
+      font-size:13px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.03);
+      color:var(--fg);
+    }
+    ul.messages li { margin:.35rem 0; }
+    ul.messages strong { text-transform: capitalize; }
+
+    a { color:var(--blue); font-weight:600; font-size:13px; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+  </style>
+
+  <!-- DARK MODE SCRIPT (ADDED) -->
+<script>
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    // Save preference
+    const mode = document.body.classList.contains("dark-mode")
+      ? "dark"
+      : "light";
+
+    localStorage.setItem("theme", mode);
+  }
+</script>
+</head>
+<body>
+
+  <!-- 🔵 DARK MODE SWITCH -->
+  <div class="toggle-container">
+    <div class="toggle-btn" onclick="toggleDarkMode()">
+      <div class="toggle-circle"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h1>Home</h1>
+
+    <!-- PRESERVED CONDITIONAL ROLE NAVIGATION -->
+    {% if user_name %}
+      <p>Welcome, {{ user_name }}! (Role: {{ session.get('role', 'student') }})</p>
+      <p>
+        {% if session.get('role') == 'faculty' %}
+          <a class="btn" href="{{ url_for('faculty_portal') }}">Faculty Dashboard</a>
+        {% else %}
+          <a class="btn" href="{{ url_for('student_portal') }}">Student Dashboard</a>
+        {% endif %}
+        <a class="btn" href="{{ url_for('logout') }}">Logout</a>
+      </p>
+    {% else %}
+      <p><a class="btn" href="{{ url_for('login') }}">Login</a> <a class="btn" href="{{ url_for('signup') }}">Sign Up</a></p>
+    {% endif %}
+
+    <!-- PRESERVED FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="messages">
+          {% for cat,msg in messages %}
+            <li><strong>{{ cat }}:</strong> {{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+</body>
+</html>

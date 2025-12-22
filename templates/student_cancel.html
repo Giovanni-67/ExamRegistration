@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Restore saved theme BEFORE page renders -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    })();
+  </script>
+  
+  <meta charset="utf-8" />
+  <title>Cancel Appointments</title>
+
+  <!-- GOOGLE FONT -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+    rel="stylesheet" 
+  />
+
+  <style>
+/* GLOBAL */
+* { box-sizing: border-box; }
+:root {
+  --bd: #e5e7eb;
+  --muted: #6b7280;
+  --blue: #2563eb;
+  --indigo: #4f46e5;
+}
+
+/* BASE PAGE */
+body {
+  font-family: 'Inter', system-ui, Arial, sans-serif;
+  background: #f5f7fa;
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #111827;
+}
+
+/* TOP SECTION */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(to right, var(--blue), var(--indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* NAV BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* CARD-LIKE PANELS */
+.panel,
+.list, /* include list containers too so they adopt theme */
+.row {
+  background: #ffffff;
+  border: 1px solid var(--bd);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-top: 1rem;
+  font-size: 13px;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border-radius: 14px;
+  overflow:hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  background:#fff;
+}
+thead {
+  background: #f9fafb;
+  font-weight:700;
+}
+th, td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  text-align: left;
+}
+tbody tr:nth-child(even){
+  background:#f9fafb;
+}
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #93c5fd;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-ok {
+  background: #eefbea;
+  border-color: #bfe8b8;
+  color: #065f46;
+}
+
+.badge-cxl {
+  background: #fef2f2;
+  border-color:#fca5a5;
+  color:#991b1b;
+}
+
+/* MUTED TEXT */
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* DROPDOWNS */
+select {
+  width:100%;
+  max-width:600px;
+  padding:10px;
+  border:1px solid var(--bd);
+  border-radius:10px;
+  font-size:14px;
+  background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,0.05);
+}
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <h1>Cancel Appointments</h1>
+    <div>
+      <a class="btn" href="{{ url_for('student_portal') }}">Back to Dashboard</a>
+      <a class="btn" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="list-card" style="list-style:none;padding:10px 16px;border-left:4px solid #2563eb;font-size:13px;">
+        {% for c,m in messages %}
+          <li style="margin:.35rem 0;"><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% if registrations and registrations|length > 0 %}
+  <div class="list-card">
+    {% for r in registrations %}
+      <div class="row">
+        <div>
+          <div style="font-weight:700;font-size:15px;color:#1f2937;margin-bottom:5px;">{{ r.exam_code }}</div>
+          <div class="muted">
+            {{ r.session_datetime.strftime("%b %d, %Y %I:%M %p").lstrip("0") }}
+            — {{ r.campus_name }} • {{ r.building_name }} {{ r.room_number }}
+          </div>
+        </div>
+
+        <!-- PRESERVED FORM + ID FIELD -->
+        <div style="text-align:right;">
+          <form method="post" action="{{ url_for('student_cancel', registration_id=r.registration_id) }}">
+            <button class="btn" type="submit">Cancel</button>
+          </form>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="muted">You have no active appointments to cancel.</p>
+  {% endif %}
+
+</body>
+</html>

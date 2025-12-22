@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Restore saved theme BEFORE page renders -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    })();
+  </script>
+
+    <meta charset="UTF-8">
+    <title>Faculty Dashboard</title>
+
+    <!-- ✅ DECORATIVE STYLES (Layered on top, built around working file 2) -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            font-family: Arial, sans-serif;
+            color: var(--fg);
+        }
+        :root {
+            --csn-blue: #00345f;
+            --csn-gold: #ffb81c;
+            --bg: #f5f6fa;
+            --fg: #1a1a1a;
+            --card-bg: #ffffff;
+            --border: #dadada;
+            --subtext: #6b6b6b;
+            --input-bg: #f5f6fa;
+            --table-header-bg: #f3f4f6;
+            --table-row-alt: #fafafa;
+        }
+        .dark-mode {
+            --bg: #0f172a;
+            --fg: #f3f4f6;
+            --card-bg: #1e293b;
+            --border: #334155;
+            --subtext: #cbd5e1;
+            --input-bg: #1e293b;
+            --table-header-bg: #334155;
+            --table-row-alt: #1e293b;
+        }
+        .csn-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: var(--csn-blue);
+            color: white;
+        }
+        .csn-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--csn-gold);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--csn-blue);
+        }
+        .toolbar-btn {
+            padding: 6px 12px;
+            background: white;
+            color: var(--csn-blue);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .toolbar-btn:hover {
+            background: #f1f1f1;
+        }
+        .toggle-btn {
+            width: 46px;
+            height: 22px;
+            background: #d1d5db;
+            border-radius: 999px;
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle-circle {
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            transition: all 0.25s ease;
+        }
+        .dark-mode .toggle-circle {
+            transform: translateX(24px);
+        }
+
+        /* ✅ Added stat card grid but NOT interfering with working code */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin: 26px auto;
+            max-width: 1100px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 22px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        }
+        .stat-title {
+            font-size: 13px;
+            color: var(--subtext);
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* ✅ OPTIONAL confirmation banner */
+        .confirm-banner {
+            padding: 10px;
+            background: #e3fce3;
+            border: 1px solid #b7e2b7;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 12px auto;
+            max-width: 1050px;
+            color: #0a6b0a;
+            text-align: center;
+        }
+
+        /* ✅ Keep calendar exactly like working file 2 */
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-top: 1rem; max-width: 1100px; margin-left:auto; margin-right:auto; }
+        .calendar { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
+        .cal-header { display:flex; justify-content:space-between; align-items:center; padding:10px 18px; background: var(--table-header-bg); }
+        .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); }
+        .dow, .cell { padding:0.5rem; border-right:1px solid var(--border); border-bottom:1px solid var(--border); min-height:110px; }
+        .dow { font-weight:600; text-align:center; }
+        .cell:last-child, .dow:last-child { border-right:0; }
+        .day { font-size:0.9rem; margin-bottom:0.25rem; font-weight:600; }
+        .session {font-size: 13px; margin: 5px 0; padding: 9px;background: #eff6ff;border: 1px solid #2563eb25;border-radius: 10px;box-shadow: 0 1px 3px rgba(37,99,235,0.06);color: #111827; /* ← force dark text by default */}
+.dark-mode .session { background: #1e293b;   /* dark card */border-color: #334155; /* border you already use */color: #f3f4f6;/* visible light text */}
+
+.dark-mode .session .muted {
+  color: #d1d5db;        /* lighter subtext so it shows */
+}
+        .sidebar { border:1px solid var(--border); border-radius:12px; padding:14px; background: var(--card-bg); }
+        .muted { color: var(--subtext); font-size:13px; }
+    </style>
+
+    <!-- ✅ DARK MODE TOGGLE SCRIPT WITHOUT TOUCHING BASE LOGIC -->
+<script>
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    // Save preference
+    const mode = document.body.classList.contains("dark-mode")
+      ? "dark"
+      : "light";
+
+    localStorage.setItem("theme", mode);
+  }
+</script>
+</head>
+
+<body>
+
+    <!-- ✅ NEW CSN HEADER (decorative only) -->
+    <div class="csn-header">
+        <div class="csn-logo">CSN</div>
+        <div>Faculty Dashboard</div>
+        <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+            <span style="font-size:13px;">Dark Mode</span>
+            <div class="toggle-btn" onclick="toggleDarkMode()"><div class="toggle-circle"></div></div>
+            <a class="toolbar-btn" href="{{ url_for('faculty_new_session') }}">+ Create New Exam Session</a>
+            <a class="toolbar-btn" href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+
+    <!-- ✅ STATS (pure decoration, does not affect working template) -->
+    <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">Total Registrations</div>
+          <div class="stat-value">{{ total }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Confirmed</div>
+          <div class="stat-value">{{ confirmed }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Pending</div>
+          <div class="stat-value">{{ pending }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">This Week</div>
+          <div class="stat-value">{{ this_week }}</div>
+        </div>
+    </div>
+
+    <!-- ✅ OPTIONAL confirmation banner does NOT block working UI -->
+    {% if show_confirmation %}
+        <div class="confirm-banner">Registration Confirmed!</div>
+    {% endif %}
+
+    <!-- ✅ CALENDAR + UPCOMING SESSIONS (100% preserved from working file 2) -->
+    <div class="grid">
+      <div class="calendar">
+        <div class="cal-header">
+          <a class="toolbar-btn" href="{{ url_for('faculty_portal', year=prev_year, month=prev_month) }}">&larr; Prev</a>
+          <div><strong>{{ year }}</strong> – {{ cal.month_name[month] }}</div>
+          <a class="toolbar-btn" href="{{ url_for('faculty_portal', year=next_year, month=next_month) }}">Next &rarr;</a>
+        </div>
+
+        <div class="cal-grid">
+          {% for d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
+            <div class="dow">{{ d }}</div>
+          {% endfor %}
+
+          {% for day in range(1, cal.monthrange(year, month)[1]+1) %}
+            {% set iso = (year|string) ~ '-' ~ ('%02d' % month) ~ '-' ~ ('%02d' % day) %}
+            <div class="cell">
+              <div class="day">{{ day }}</div>
+              {% for s in by_day.get(iso, []) %}
+                <div class="session">
+                  <div><strong>{{ s.exam_code }}</strong> @ {{ s.time_str }}–{{ s.end_str }}</div>
+                  <div>{{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
+                  <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
+                  <div>Duration: {{ s.duration_minutes }} min</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <h3>Upcoming Sessions</h3>
+        {% if upcoming %}
+          <ul>
+            {% for s in upcoming %}
+              <li style="margin-bottom:0.6rem;">
+                <strong>{{ s.exam_code }}</strong><br/>
+                {{ s.session_datetime.strftime('%Y-%m-%d') }} {{ s.time_str }}–{{ s.end_str }} <br/>
+                {{ s.campus_name }} ({{ s.building_name }} {{ s.room_number }}) <br/>
+                Seats: {{ s.booked }}/{{ s.capacity }} • {{ s.duration_minutes }} min
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No upcoming sessions.</p>
+        {% endif %}
+      </aside>
+    </div>
+
+</body>
+</html>

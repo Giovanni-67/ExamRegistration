@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Restore saved theme BEFORE page renders -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    })();
+  </script>
+
+  <meta charset="utf-8" />
+  <title>Student Dashboard</title>
+
+  <!-- GOOGLE FONT -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+    rel="stylesheet" 
+  />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    /* ----------------------------------------------------
+       🔵 DARK MODE SYSTEM (ADDED — DOES NOT REMOVE ORIGINALS)
+       ---------------------------------------------------- */
+    :root {
+      --bg:#f5f7fa;
+      --fg:#111827;
+      --card-bg:#ffffff;
+      --border:#e5e7eb;
+      --subtext:#6b7280;
+
+      --cal-header-bg:#f9fafb;
+      --dow-bg:#f3f4f6;
+      --cell-bg:#ffffff;
+      --cell-hover:#f9fafb;
+
+      --session-bg:#eff6ff;
+      --session-border:#2563eb25;
+
+      --badge-blue-bg:#dbeafe;
+      --badge-blue-border:#93c5fd;
+      --badge-blue-text:#1e40af;
+
+      --badge-full-bg:#fffbeb;
+      --badge-full-border:#f59e0b30;
+      --badge-full-text:#b45309;
+    }
+
+    .dark-mode {
+      --bg:#0f172a;
+      --fg:#f3f4f6;
+      --card-bg:#1e293b;
+      --border:#334155;
+      --subtext:#cbd5e1;
+
+      --cal-header-bg:#1e293b;
+      --dow-bg:#334155;
+      --cell-bg:#1e293b;
+      --cell-hover:#0f172a;
+
+      --session-bg:#1e293b;
+      --session-border:#334155;
+
+      --badge-blue-bg:#1e3a8a;
+      --badge-blue-border:#3b82f6;
+      --badge-blue-text:#bfdbfe;
+
+      --badge-full-bg:#3f2d13;
+      --badge-full-border:#fbbf24;
+      --badge-full-text:#fde68a;
+    }
+
+    /* ---------------------------------------------------- */
+    body {
+      font-family: 'Inter', system-ui, Arial, sans-serif;
+      background: var(--bg);
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: var(--fg);
+      transition: background 0.25s, color 0.25s;
+    }
+
+    /* DARK MODE TOGGLE BUTTON */
+    .toggle-container {
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:1rem;
+    }
+    .toggle-btn {
+      width:46px;
+      height:22px;
+      background:#d1d5db;
+      border-radius:999px;
+      position:relative;
+      cursor:pointer;
+    }
+    .toggle-circle {
+      width:18px;
+      height:18px;
+      background:white;
+      border-radius:50%;
+      position:absolute;
+      top:2px;
+      left:3px;
+      transition:0.25s ease;
+    }
+    .dark-mode .toggle-circle { transform:translateX(24px); }
+
+    /* TOP BAR */
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(to right,#2563eb,#4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card-bg);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      color: var(--fg);
+    }
+    .btn:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+    }
+
+    /* CALENDAR */
+    .calendar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: var(--cal-header-bg);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--fg);
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .dow {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 0;
+      background: var(--dow-bg);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+    }
+    .dow:last-child { border-right: 0; }
+
+    .cell {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      min-height: 120px;
+      padding: 10px;
+      background: var(--cell-bg);
+      transition: 0.1s;
+      color: var(--fg);
+    }
+    .cell:hover { background: var(--cell-hover); }
+    .cell:last-child { border-right: 0; }
+
+    .muted { color: var(--subtext); }
+
+    .day {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--fg);
+    }
+
+    .session {
+      font-size: 13px;
+      margin: 5px 0;
+      padding: 9px;
+      background: var(--session-bg);
+      border: 1px solid var(--session-border);
+      border-radius: 10px;
+      color: var(--fg);
+      box-shadow: 0 1px 3px rgba(37,99,235,0.06);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 6px;
+      background: var(--badge-blue-bg);
+      border: 1px solid var(--badge-blue-border);
+      color: var(--badge-blue-text);
+    }
+
+    .badge.full {
+      background: var(--badge-full-bg);
+      border-color: var(--badge-full-border);
+      color: var(--badge-full-text);
+    }
+
+    .muted-text { color: var(--subtext); font-size: 13px; }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      color: var(--fg);
+    }
+    .sidebar h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .sidebar ul { padding-left: 14px; margin: 0; }
+
+    /* FLASH MESSAGES */
+    .messages {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 14px;
+      background: var(--card-bg);
+      border-left: 4px solid #2563eb;
+      border-radius: 10px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--fg);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+
+    /* MOBILE */
+    @media(max-width: 760px){
+      .grid { grid-template-columns: 1fr; }
+      .top { flex-direction: column; gap: 12px; align-items: flex-start; }
+    }
+  </style>
+
+<script>
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    // Save preference
+    const mode = document.body.classList.contains("dark-mode")
+      ? "dark"
+      : "light";
+
+    localStorage.setItem("theme", mode);
+  }
+</script>
+
+</head>
+<body>
+
+  <!-- DARK MODE TOGGLE -->
+  <div class="toggle-container">
+    <div class="toggle-btn" onclick="toggleDarkMode()">
+      <div class="toggle-circle"></div>
+    </div>
+  </div>
+
+  <div class="top">
+    <h1>Student Dashboard</h1>
+    <div>
+      <a class="btn" href="{{ url_for('student_make_appointment') }}">Make Appointment</a>
+      <a class="btn" href="{{ url_for('student_cancel_page') }}">Cancel Appointments</a>
+      <a class="btn" href="{{ url_for('student_history') }}">Appointment History</a>
+      <a class="btn" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="messages">
+        {% for c,m in messages %}
+          <li><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <div class="grid">
+
+    <!-- CALENDAR -->
+    <div class="calendar">
+      <div class="cal-header">
+        <a class="btn" href="{{ url_for('student_portal', year=prev_year, month=prev_month) }}">&larr;</a>
+        <span>{{ year }} — {{ cal.month_name[month] }}</span>
+        <a class="btn" href="{{ url_for('student_portal', year=next_year, month=next_month) }}">&rarr;</a>
+      </div>
+
+      <div class="cal-grid">
+        {% for d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
+          <div class="dow">{{ d }}</div>
+        {% endfor %}
+
+        {% set first_weekday = cal.weekday(year, month, 1) %}
+        {% set lead = (first_weekday + 1) % 7 %}
+        {% for _ in range(lead) %}
+          <div class="cell muted"></div>
+        {% endfor %}
+
+        {% set last_day = cal.monthrange(year, month)[1] %}
+        {% for day in range(1, last_day+1) %}
+          {% set iso = (year|string) ~ '-' ~ ('%02d' % month) ~ '-' ~ ('%02d' % day) %}
+          <div class="cell">
+            <div class="day">{{ day }}</div>
+
+            {% for s in by_day.get(iso, []) %}
+              <div class="session">
+                <div>
+                  {{ s.exam_code }} {{ s.session_datetime.strftime("%I:%M %p") }}
+                  {% if s.already_registered %}
+                    <span class="badge">Registered</span>
+                  {% elif s.is_full %}
+                    <span class="badge full">Full</span>
+                  {% endif %}
+                </div>
+                <div>{{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
+                <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h3>Upcoming Sessions</h3>
+      {% if upcoming %}
+        <ul>
+          {% for s in upcoming %}
+            <li style="margin-bottom: 12px;">
+              {{ s.exam_code }}<br/>
+              {{ s.session_datetime.strftime('%b %d, %Y %I:%M %p') }}<br/>
+              {{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}<br/>
+              {% if s.already_registered %}
+                <span class="badge">Registered</span>
+              {% elif s.is_full %}
+                <span class="badge full">Full</span>
+              {% endif %}
+              <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted-text">No sessions this month yet</p>
+      {% endif %}
+    </aside>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Restore saved theme BEFORE page renders -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    })();
+  </script>
+
+  <meta charset="utf-8" />
+  <title>Make Appointment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- GOOGLE FONT -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+    rel="stylesheet" 
+  />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    /* -----------------------------------------
+       🔵 DARK MODE SYSTEM (ADDED)
+       ----------------------------------------- */
+    :root {
+      --csn-blue: #00345f;
+      --csn-gold: #ffb81c;
+
+      --bg:#f5f7fa;
+      --fg:#111827;
+      --card-bg:#ffffff;
+      --border:#e5e7eb;
+      --subtext:#6b7280;
+
+      /* original vars preserved */
+      --bd:#e5e7eb;
+      --muted:#6b7280;
+
+      --session-bg:#eff6ff;
+      --session-border:#2563eb25;
+      --badge-blue-bg:#dbeafe;
+      --badge-blue-border:#93c5fd;
+      --badge-blue-text:#1e40af;
+
+      --badge-full-bg:#fffbeb;
+      --badge-full-border:#f59e0b30;
+      --badge-full-text:#b45309;
+    }
+
+    .dark-mode {
+      --bg:#0f172a;
+      --fg:#f3f4f6;
+      --card-bg:#1e293b;
+      --border:#334155;
+      --subtext:#cbd5e1;
+
+      --bd:#334155;
+      --muted:#cbd5e1;
+
+      --session-bg:#1e293b;
+      --session-border:#334155;
+
+      --badge-blue-bg:#1e3a8a;
+      --badge-blue-border:#3b82f6;
+      --badge-blue-text:#bfdbfe;
+
+      --badge-full-bg:#3f2d13;
+      --badge-full-border:#fbbf24;
+      --badge-full-text:#fde68a;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, Arial, sans-serif;
+      background: var(--bg);
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: var(--fg);
+      transition: background 0.25s, color 0.25s;
+    }
+
+    /* -----------------------------------------
+       🔵 DARK MODE TOGGLE (ADDED)
+       ----------------------------------------- */
+    .toggle-container {
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:1rem;
+    }
+    .toggle-btn {
+      width:46px;
+      height:22px;
+      background:#d1d5db;
+      border-radius:999px;
+      position:relative;
+      cursor:pointer;
+    }
+    .toggle-circle {
+      width:18px;
+      height:18px;
+      background:white;
+      border-radius:50%;
+      position:absolute;
+      top:2px;
+      left:3px;
+      transition:0.25s ease;
+    }
+    .dark-mode .toggle-circle { transform:translateX(24px); }
+
+    /* ----------------------------------------- */
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 1rem;
+      background: linear-gradient(to right,#2563eb,#4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card-bg);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      cursor: pointer;
+      color: var(--fg);
+    }
+    .btn:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 1.4rem;
+      color: var(--fg);
+    }
+
+    label {
+      display:block;
+      margin:.75rem 0 .3rem;
+      font-weight:600;
+      font-size:14px;
+      color:var(--fg);
+    }
+
+    select {
+      width:100%;
+      max-width:600px;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-size:14px;
+      background:var(--card-bg);
+      color:var(--fg);
+    }
+
+    .session {
+      font-size: 13px;
+      margin: 5px 0;
+      padding: 9px;
+      background: var(--session-bg);
+      border: 1px solid var(--session-border);
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(37,99,235,0.06);
+      color: var(--fg);
+    }
+
+    .badge {
+      display:inline-block;
+      padding:2px 7px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:600;
+      margin-left:6px;
+      background:var(--badge-blue-bg);
+      border:1px solid var(--badge-blue-border);
+      color:var(--badge-blue-text);
+    }
+
+    .badge.full {
+      background:var(--badge-full-bg);
+      border-color:var(--badge-full-border);
+      color:var(--badge-full-text);
+    }
+
+    .messages {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 14px;
+      background: var(--card-bg);
+      border-left: 4px solid #2563eb;
+      border-radius: 10px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      color: var(--fg);
+    }
+
+    .messages li { margin:.35rem 0; }
+
+    .muted { color: var(--muted); font-size: 13px; }
+
+    /* readable link color in dark mode */
+    a { color:#2563eb; font-weight:600; }
+    .dark-mode a { color:#60a5fa; }
+
+    @media(max-width:760px){
+      .top{flex-direction:column;align-items:flex-start;gap:10px;}
+    }
+  </style>
+
+<script>
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    // Save preference
+    const mode = document.body.classList.contains("dark-mode")
+      ? "dark"
+      : "light";
+
+    localStorage.setItem("theme", mode);
+  }
+</script>
+
+</head>
+<body>
+
+  <!-- 🔵 DARK MODE SWITCH -->
+  <div class="toggle-container">
+    <div class="toggle-btn" onclick="toggleDarkMode()">
+      <div class="toggle-circle"></div>
+    </div>
+  </div>
+
+  <div class="topbar panel">
+    <h1>Make an Appointment</h1>
+    <div>
+      <a class="btn" href="{{ url_for('student_history') }}">Appointment History</a>
+      <a class="btn" href="{{ url_for('student_make_appointment') }}">Make Appointment</a>
+      <a class="btn" href="{{ url_for('student_cancel_page') }}">Cancel Appointments</a>
+      <a class="btn" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="messages">
+        {% for c, m in messages %}
+          <li><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% if sessions and sessions|length > 0 %}
+
+    <div class="panel">
+      <form method="post" action="{{ url_for('student_make_appointment') }}">
+        <label for="session_id">Choose an Exam Session</label>
+        <select id="session_id" name="session_id" required>
+          {% for s in sessions %}
+            <option value="{{ s.id }}">
+              {{ s.exam_code }} — {{ s.session_datetime.strftime("%b %d, %Y %I:%M %p") }}
+              — {{ s.campus_name }} {{ s.building_name }} {{ s.room_number }}
+              — Seats: {{ s.booked }}/{{ s.capacity }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <div style="margin-top:.9rem;">
+          <button class="btn" type="submit">Register</button>
+          <a class="btn" href="{{ url_for('student_portal') }}">Back to Dashboard</a>
+        </div>
+      </form>
+    </div>
+
+    <div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">Session Details</h3>
+
+      {% for s in sessions %}
+      <div class="panel">
+        <div style="font-weight:700;font-size:15px;color:var(--fg);margin-bottom:6px;">
+          {{ s.exam_code }} • {{ s.description }}
+        </div>
+
+        <div>
+          {{ s.session_datetime.strftime("%A, %b %d, %Y %I:%M %p") }}
+          {% if s.already_registered %}
+            <span class="badge">Registered</span>
+          {% elif s.is_full %}
+            <span class="badge full">Full</span>
+          {% endif %}
+        </div>
+
+        <div>Duration: {{ s.duration_minutes }} min</div>
+        <div>Location: {{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
+        <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+
+    <p class="muted">No available sessions to register right now.</p>
+    <div><a class="btn" href="{{ url_for('student_portal') }}">Back to Dashboard</a></div>
+
+  {% endif %}
+
+</body>
+</html>
