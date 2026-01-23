@@ -1,0 +1,214 @@
+/* Core design tokens for the entire application.
+   All pages must derive colors from these variables. */
+:root {
+  /* Institutional branding */
+  --csn-blue: #00345f;
+  --csn-gold: #ffb81c;
+
+  /* Accent colors for links and highlights */
+  --blue: #2563eb;
+  --indigo: #4f46e5;
+
+  /* Light-mode surfaces and text */
+  --bg: #f5f7fa;
+  --fg: #111827;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  --subtext: #6b7280;
+
+  /* Exam session cards */
+  --session-bg: #eff6ff;
+  --session-border: #2563eb25;
+
+  /* Informational status badges */
+  --badge-blue-bg: #dbeafe;
+  --badge-blue-border: #93c5fd;
+  --badge-blue-text: #1e40af;
+
+  /* Warning / full-capacity badges */
+  --badge-full-bg: #fffbeb;
+  --badge-full-border: #f59e0b30;
+  --badge-full-text: #b45309;
+}
+
+/* Dark mode works by overriding variables only.
+   No component styles should be duplicated here. */
+.dark-mode {
+  --bg: #0f172a;
+  --fg: #f3f4f6;
+  --card-bg: #1e293b;
+  --border: #334155;
+  --subtext: #cbd5e1;
+
+  --session-bg: #1e293b;
+  --session-border: #334155;
+
+  --badge-blue-bg: #1e3a8a;
+  --badge-blue-border: #3b82f6;
+  --badge-blue-text: #bfdbfe;
+
+  --badge-full-bg: #3f2d13;
+  --badge-full-border: #fbbf24;
+  --badge-full-text: #fde68a;
+}
+
+/* Ensure consistent sizing behavior across browsers */
+* {
+  box-sizing: border-box;
+}
+
+/* Page baseline — no layout assumptions */
+body {
+  margin: 0;
+  font-family: Inter, system-ui, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* Reusable surface container for forms, dashboards, and content blocks */
+.panel,
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  color: var(--fg);
+}
+
+/* Shared button styling for navigation, forms, and toolbars */
+.btn,
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+
+/* Subtle hover feedback without changing layout */
+.btn:hover,
+.toolbar-btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+/* Container used to right-align the theme toggle */
+.toggle-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+/* Visual shell of the dark-mode toggle */
+.toggle-btn {
+  width: 46px;
+  height: 22px;
+  background: #d1d5db;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Toggle knob that slides when dark mode is active */
+.toggle-circle {
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  transition: 0.25s ease;
+}
+
+/* Shift knob to indicate dark mode visually */
+.dark-mode .toggle-circle {
+  transform: translateX(24px);
+}
+
+/* Flask flash messages (success, error, info) */
+.messages {
+  list-style: none;
+  padding: 10px 16px;
+  margin: 0 0 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: 10px;
+  font-size: 13px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  color: var(--fg);
+}
+
+/* Individual flash message spacing */
+.messages li {
+  margin: 0.35rem 0;
+}
+
+/* Capitalize flash message category labels */
+.messages strong {
+  text-transform: capitalize;
+}
+
+/* De-emphasized helper text */
+.muted {
+  color: var(--subtext);
+  font-size: 13px;
+}
+
+/* Global link styling with dark-mode override */
+a {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.dark-mode a {
+  color: #60a5fa;
+}
+
+/* Exam session card used across student and faculty views */
+.session {
+  font-size: 13px;
+  padding: 9px;
+  margin: 5px 0;
+  background: var(--session-bg);
+  border: 1px solid var(--session-border);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(37,99,235,0.06);
+}
+
+/* Status badge (e.g., Registered) */
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  background: var(--badge-blue-bg);
+  border: 1px solid var(--badge-blue-border);
+  color: var(--badge-blue-text);
+}
+
+/* Variant for full-capacity or warning state */
+.badge.full {
+  background: var(--badge-full-bg);
+  border-color: var(--badge-full-border);
+  color: var(--badge-full-text);
+}
