@@ -1,0 +1,213 @@
+* {
+    box-sizing: border-box;
+}
+
+/* ---------------------------------------------------- 
+   🔵 DARK MODE VARIABLES (MATCHES FACULTY DASHBOARD)
+   ---------------------------------------------------- */
+:root {
+    --csn-blue: #00345f;
+    --csn-gold: #ffb81c;
+    --bg: #f5f7fa;
+    --fg: #111827;
+    --card-bg: #ffffff;
+    --border: #e5e7eb;
+    --subtext: #6b7280;
+    --bd: #e5e7eb;
+    --muted: #6b7280;
+    --blue: #2563eb;
+    --indigo: #4f46e5;
+}
+
+.dark-mode {
+    --bg: #0f172a;
+    --fg: #f3f4f6;
+    --card-bg: #1e293b;
+    --border: #334155;
+    --subtext: #cbd5e1;
+    --bd: #334155;
+}
+
+body {
+    font-family: 'Inter', system-ui, Arial, sans-serif;
+    background: var(--bg);
+    max-width: 60%;
+    margin: 3% auto;
+    padding: 0 2%;
+    color: var(--fg);
+}
+
+/* ---------------------------------------------------- 
+   🔵 DARK MODE TOGGLE BUTTON (Header-less version)
+   ---------------------------------------------------- */
+.toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.toggle-btn {
+    width: 56px;
+    height: 28px;
+    background: #d1d5db;
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+}
+
+.toggle-circle {
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: all 0.25s ease;
+}
+
+.dark-mode .toggle-circle {
+    transform: translateX(28px);
+}
+
+/* ----------------------------------------------- */
+
+h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 2rem;
+    text-align: center;
+    background: linear-gradient(to right, var(--blue), var(--indigo));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    width: 100%;
+}
+
+.panel, .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4% 5%;
+    margin-bottom: 1.5%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-size: 1rem;
+    min-height: 65vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btn, button[type="submit"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+    cursor: pointer;
+    transition: 0.15s ease;
+    margin-right: 0.6rem;
+    color: var(--fg);
+}
+
+.btn:hover, button[type="submit"]:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.btn-danger:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #7f1d1d;
+}
+
+.row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 3rem;
+}
+
+.row label {
+    margin-top: 0;
+}
+
+input, select {
+    padding: 0.85rem;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    background: var(--card-bg);
+    color: var(--fg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin-top: 0.4rem;
+    display: block;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--fg);
+    margin: 5rem 0 0rem;
+}
+
+label:first-of-type {
+    margin-top: 0;
+}
+
+ul.messages {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+    border-radius: 10px;
+    padding: 0.8rem 1.2rem;
+    margin: 0 0 1.2rem;
+    list-style: none;
+    font-size: 0.95rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    color: var(--fg);
+}
+
+ul.messages li {
+    margin: .35rem 0;
+}
+
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+}
+
+form > label,
+form > .row,
+form > div {
+    width: 100%;
+    max-width: 500px;
+}
+
+@media(max-width: 760px) {
+    .row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
