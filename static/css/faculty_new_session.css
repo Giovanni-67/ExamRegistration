@@ -75,7 +75,7 @@ body {
 h1 {
     font-size: 2.2rem;
     font-weight: 700;
-    margin: 0 0 2rem;
+    margin: 0 0 0rem;
     text-align: center;
     background: linear-gradient(to right, var(--blue), var(--indigo));
     -webkit-background-clip: text;
@@ -138,7 +138,7 @@ h1 {
     gap: 2rem;
     flex-wrap: wrap;
     align-items: center;
-    margin-top: 3rem;
+    margin-top: 4rem;
 }
 
 .row label {
@@ -164,7 +164,7 @@ label {
     font-weight: 600;
     font-size: 1rem;
     color: var(--fg);
-    margin: 5rem 0 0rem;
+    margin: 4rem 0 0rem;
 }
 
 label:first-of-type {
@@ -201,7 +201,33 @@ form > label,
 form > .row,
 form > div {
     width: 100%;
-    max-width: 500px;
+    max-width: 450px;
+}
+
+/* Individual adjustments for each element */
+/* First label (Exam) */
+form > label:nth-of-type(1) {
+    margin-left: 2rem;
+}
+
+/* Second label (Location) */
+form > label:nth-of-type(2) {
+    margin-left: 2rem;
+}
+
+/* First row (Date/Start time) */
+form > .row:nth-of-type(1) {
+    margin-left: 7rem;
+}
+
+/* Second row (Capacity/Duration) */
+form > .row:nth-of-type(2) {
+    margin-left: 14rem;
+}
+
+/* Button container */
+form > div:last-child {
+    margin-left: 14rem;
 }
 
 @media(max-width: 760px) {
