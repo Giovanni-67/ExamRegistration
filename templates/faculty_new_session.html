@@ -4,77 +4,99 @@
     <meta charset="utf-8" />
     <title>Create Exam Session</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- GOOGLE FONT -->
+    
+    <!-- Preconnect to Google Fonts CDN for faster font loading -->
     <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <!-- Load Inter font: weights 400, 500, 600, 700 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <!-- Base JS (includes theme restoration) -->
+    
+    <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-    <!-- Page-specific CSS -->
+    
+    <!-- Load page-specific styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/faculty_new_session.css') }}" />
 </head>
+
 <body>
-    <!-- 🔵 DARK MODE SWITCH ABOVE FORM -->
+    <!-- Dark mode toggle switch, positioned top-right -->
     <div class="toggle-container">
         <div class="toggle-btn" onclick="toggleDarkMode()">
             <div class="toggle-circle"></div>
         </div>
     </div>
 
+    <!-- Main container with form -->
     <div class="panel">
+        <!-- Page title: centered gradient text -->
         <h1>Create Exam Session</h1>
 
-        <!-- PRESERVED FLASH MESSAGE FUNCTION -->
+        <!-- Flash messages from Flask: displays list of (category, message) tuples -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="messages">
                     {% for c,m in messages %}
+                        <!-- c = category (success/error), m = message text -->
                         <li><strong>{{ c }}:</strong> {{ m }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
         {% endwith %}
 
-        <!-- PRESERVED FORM EXACTLY AS GIVEN -->
+        <!-- Form submits POST to faculty_new_session route -->
         <form method="post" action="{{ url_for('faculty_new_session') }}">
+            
+            <!-- Exam dropdown: returns exam_id -->
             <label>Exam
                 <select name="exam_id" required>
                     <option value="" disabled selected>Choose exam…</option>
+                    <!-- exams = list of exam objects with .id and .exam_code -->
                     {% for e in exams %}
                         <option value="{{ e.id }}">{{ e.exam_code }}</option>
                     {% endfor %}
                 </select>
             </label>
 
+            <!-- Location dropdown: returns location_id -->
             <label>Location
                 <select name="location_id" required>
                     <option value="" disabled selected>Choose location…</option>
+                    <!-- locations = list of location objects with .id, .campus_name, .building_name, .room_number -->
                     {% for l in locations %}
                         <option value="{{ l.id }}">{{ l.campus_name }} – {{ l.building_name }} {{ l.room_number }}</option>
                     {% endfor %}
                 </select>
             </label>
 
+            <!-- Date and time inputs: side-by-side on desktop, stacked on mobile -->
             <div class="row">
+                <!-- Date picker: returns 'date' in YYYY-MM-DD format -->
                 <label>Date
                     <input type="date" name="date" required>
                 </label>
+                <!-- Time picker: returns 'time' in HH:MM format -->
                 <label>Start time
                     <input type="time" name="time" required>
                 </label>
             </div>
 
+            <!-- Capacity and duration inputs: side-by-side on desktop -->
             <div class="row">
+                <!-- Number input: returns 'capacity' as integer, min 1, default 20 -->
                 <label>Capacity
                     <input type="number" name="capacity" min="1" value="20" required>
                 </label>
+                <!-- Number input: returns 'duration_minutes' as integer, min 15, step 5, default 90 -->
                 <label>Duration (minutes)
                     <input type="number" name="duration_minutes" min="15" step="5" value="90" required>
                 </label>
             </div>
 
-            <div style="margin-top:4rem;">
+            <!-- Action buttons: adjust margin-top to change spacing -->
+            <div style="margin-top:3rem;">
+                <!-- Submit: creates exam session -->
                 <button type="submit" class="btn">Create</button>
-                <a class="btn" href="{{ url_for('faculty_portal') }}">Back</a>
+                <!-- Link: returns to faculty_dashboard route -->
+                <a class="btn" href="{{ url_for('faculty_dashboard') }}">Back</a>
             </div>
         </form>
     </div>
