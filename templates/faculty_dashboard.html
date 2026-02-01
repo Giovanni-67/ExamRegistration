@@ -3,155 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <title>Faculty Dashboard</title>
-    
-    <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
+
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-    
-    <!-- Load page-specific styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/faculty_dashboard.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/faculty_dashboard.css') }}">
 </head>
 
 <body>
-    <!-- Header bar with logo, title, and controls -->
-    <div class="csn-header">
-        <!-- Logo badge: CSN initials on gold background -->
-        <div class="csn-logo">CSN</div>
-        
-        <div>Faculty Dashboard</div>
-        
-        <!-- Right-aligned controls -->
-        <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
-            <span style="font-size:13px;">Dark Mode</span>
-            <!-- Toggle switch: calls toggleDarkMode() from base.js -->
-            <div class="toggle-btn" onclick="toggleDarkMode()">
-                <div class="toggle-circle"></div>
-            </div>
-            
-            <!-- Link to faculty_new_session route -->
-            <a class="toolbar-btn" href="{{ url_for('faculty_new_session') }}">+ Create New Exam Session</a>
-            
-            <!-- Link to logout route -->
-            <a class="toolbar-btn" href="{{ url_for('logout') }}">Logout</a>
+
+<div class="csn-header">
+    <div class="csn-logo">CSN</div>
+    <div>Faculty Dashboard</div>
+
+    <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+        <div class="toggle-btn" onclick="toggleDarkMode()">
+            <div class="toggle-circle"></div>
         </div>
+
+        <a class="toolbar-btn" href="{{ url_for('faculty_new_session') }}">+ Create New Exam Session</a>
+        <a class="toolbar-btn" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-title">Total Registrations</div>
+        <div class="stat-value">{{ total }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Confirmed</div>
+        <div class="stat-value">{{ confirmed }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Pending</div>
+        <div class="stat-value">{{ pending }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">This Week</div>
+        <div class="stat-value">{{ this_week }}</div>
+    </div>
+</div>
+
+{% if show_confirmation %}
+<div class="confirm-banner">Registration Confirmed!</div>
+{% endif %}
+
+<div class="grid">
+
+<!-- ================= CALENDAR ================= -->
+<div class="calendar">
+
+    <div class="cal-header">
+        <a class="toolbar-btn"
+           href="{{ url_for('faculty_dashboard', year=prev_year, month=prev_month) }}">
+            &larr; Prev
+        </a>
+
+        <div><strong>{{ year }}</strong> – {{ cal.month_name[month] }}</div>
+
+        <a class="toolbar-btn"
+           href="{{ url_for('faculty_dashboard', year=next_year, month=next_month) }}">
+            Next &rarr;
+        </a>
     </div>
 
-    <!-- Stats grid: displays 4 metrics passed from Flask -->
-    <div class="stats-grid">
-        <!-- total: integer, total registration count -->
-        <div class="stat-card">
-          <div class="stat-title">Total Registrations</div>
-          <div class="stat-value">{{ total }}</div>
-        </div>
-        
-        <!-- confirmed: integer, confirmed registration count -->
-        <div class="stat-card">
-          <div class="stat-title">Confirmed</div>
-          <div class="stat-value">{{ confirmed }}</div>
-        </div>
-        
-        <!-- pending: integer, pending registration count -->
-        <div class="stat-card">
-          <div class="stat-title">Pending</div>
-          <div class="stat-value">{{ pending }}</div>
-        </div>
-        
-        <!-- this_week: integer, registrations from current week -->
-        <div class="stat-card">
-          <div class="stat-title">This Week</div>
-          <div class="stat-value">{{ this_week }}</div>
-        </div>
-    </div>
+    <div class="cal-grid">
 
-    <!-- Conditional banner: only shows if show_confirmation is True -->
-    {% if show_confirmation %}
-        <div class="confirm-banner">Registration Confirmed!</div>
-    {% endif %}
-
-    <!-- Main content: 2-column grid (calendar + sidebar) -->
-    <div class="grid">
-      
-      <!-- Calendar: monthly view of exam sessions -->
-      <div class="calendar">
-        <!-- Navigation bar with month/year display -->
-        <div class="cal-header">
-          <!-- prev_year, prev_month: integers for previous month link -->
-          <a class="toolbar-btn" href="{{ url_for('faculty_dashboard', year=prev_year, month=prev_month) }}">&larr; Prev</a>
-          
-          <!-- year: integer, month: integer (1-12), cal: Python calendar module -->
-          <div><strong>{{ year }}</strong> – {{ cal.month_name[month] }}</div>
-          
-          <!-- next_year, next_month: integers for next month link -->
-          <a class="toolbar-btn" href="{{ url_for('faculty_dashboard', year=next_year, month=next_month) }}">Next &rarr;</a>
-        </div>
-
-        <!-- Calendar grid: 7 columns for days of week -->
-        <div class="cal-grid">
-          <!-- Day headers: renders Sun, Mon, Tue, Wed, Thu, Fri, Sat -->
-          {% for d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
+        {% for d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
             <div class="dow">{{ d }}</div>
-          {% endfor %}
+        {% endfor %}
 
-          <!-- Date cells: loops through all days in month -->
-          <!-- cal.monthrange(year, month)[1]: returns last day number of month -->
-          {% for day in range(1, cal.monthrange(year, month)[1]+1) %}
-            <!-- iso: string in YYYY-MM-DD format for dict lookup -->
-            {% set iso = (year|string) ~ '-' ~ ('%02d' % month) ~ '-' ~ ('%02d' % day) %}
-            
+        {# ---- FIX: offset empty cells before day 1 ---- #}
+        {% set first_weekday = cal.monthrange(year, month)[0] %}
+        {% set offset = (first_weekday + 1) % 7 %}
+
+        {% for _ in range(offset) %}
+            <div class="cell empty"></div>
+        {% endfor %}
+
+        {# ---- actual days ---- #}
+        {% for day in range(1, cal.monthrange(year, month)[1] + 1) %}
+            {% set iso = year ~ '-' ~ '%02d'|format(month) ~ '-' ~ '%02d'|format(day) %}
             <div class="cell">
-              <!-- Day number -->
-              <div class="day">{{ day }}</div>
-              
-              <!-- by_day: dict mapping ISO dates to list of session objects -->
-              <!-- Each session has: exam_code, time_str, end_str, campus_name, building_name, room_number, booked, capacity, duration_minutes -->
-              {% for s in by_day.get(iso, []) %}
-                <div class="session">
-                  <!-- s.exam_code: string, s.time_str: HH:MM, s.end_str: HH:MM -->
-                  <div><strong>{{ s.exam_code }}</strong> @ {{ s.time_str }}–{{ s.end_str }}</div>
-                  
-                  <!-- s.campus_name, s.building_name, s.room_number: all strings -->
-                  <div>{{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
-                  
-                  <!-- s.booked: integer (registrations), s.capacity: integer (max seats) -->
-                  <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
-                  
-                  <!-- s.duration_minutes: integer -->
-                  <div>Duration: {{ s.duration_minutes }} min</div>
-                </div>
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-      </div>
+                <div class="day">{{ day }}</div>
 
-      <!-- Sidebar: list of upcoming sessions -->
-      <aside class="sidebar">
-        <h3>Upcoming Sessions</h3>
-        
-        <!-- upcoming: list of session objects, empty list if none -->
-        {% if upcoming %}
-          <ul>
-            {% for s in upcoming %}
-              <li style="margin-bottom:0.6rem;">
-                <!-- s.exam_code: string -->
-                <strong>{{ s.exam_code }}</strong><br/>
-                
-                <!-- s.session_datetime: datetime object, strftime returns YYYY-MM-DD string -->
-                <!-- s.time_str: HH:MM string, s.end_str: HH:MM string -->
-                {{ s.session_datetime.strftime('%Y-%m-%d') }} {{ s.time_str }}–{{ s.end_str }} <br/>
-                
-                <!-- s.campus_name, s.building_name, s.room_number: strings -->
-                {{ s.campus_name }} ({{ s.building_name }} {{ s.room_number }}) <br/>
-                
-                <!-- s.booked: int, s.capacity: int, s.duration_minutes: int -->
-                Seats: {{ s.booked }}/{{ s.capacity }} • {{ s.duration_minutes }} min
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="muted">No upcoming sessions.</p>
-        {% endif %}
-      </aside>
+                {% for s in by_day.get(iso, []) %}
+                    <div class="session">
+                        <div><strong>{{ s.exam_code }}</strong> @ {{ s.time_str }}–{{ s.end_str }}</div>
+                        <div>{{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
+                        <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
+                        <div>Duration: {{ s.duration_minutes }} min</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
     </div>
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar">
+    <h3>Upcoming Sessions</h3>
+
+    {% if upcoming %}
+        <ul>
+            {% for s in upcoming %}
+                <li style="margin-bottom:0.6rem;">
+                    <strong>{{ s.exam_code }}</strong><br>
+                    {{ s.session_datetime.strftime('%Y-%m-%d') }}
+                    {{ s.time_str }}–{{ s.end_str }}<br>
+                    {{ s.campus_name }} ({{ s.building_name }} {{ s.room_number }})<br>
+                    Seats: {{ s.booked }}/{{ s.capacity }} • {{ s.duration_minutes }} min
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="muted">No upcoming sessions.</p>
+    {% endif %}
+</aside>
+
+</div>
 
 </body>
 </html>

@@ -167,6 +167,12 @@ body {
     background: var(--card-bg);
 }
 
+.cell.empty {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
 /* Calendar header: navigation and month/year display */
 .cal-header {
     display: flex;
