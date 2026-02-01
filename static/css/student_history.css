@@ -1,0 +1,287 @@
+/* Apply border-box to all elements: padding and border included in width/height */
+* { 
+    box-sizing: border-box; 
+}
+
+/* CSS Variables - Light Mode */
+:root {
+    --csn-blue: #00345f;        /* Brand blue */
+    --csn-gold: #ffb81c;        /* Brand gold */
+    --bg: #f5f7fa;              /* Page background */
+    --fg: #111827;              /* Primary text */
+    --card-bg: #ffffff;         /* Card background */
+    --border: #e5e7eb;          /* Border color */
+    --subtext: #6b7280;         /* Muted text */
+    --bd: #e5e7eb;              /* Alternative border variable */
+    --muted: #6b7280;           /* Duplicate of subtext */
+    --blue: #2563eb;            /* Blue for gradients */
+    --indigo: #4f46e5;          /* Indigo for gradients */
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+    
+    /* Table colors */
+    --table-header: #f9fafb;    /* Table header background */
+    --table-alt: #f9fafb;       /* Alternate row background */
+    
+    /* Badge colors - default/blue */
+    --badge-blue-bg: #dbeafe;
+    --badge-blue-border: #93c5fd;
+    --badge-blue-text: #1e40af;
+    
+    /* Badge colors - success/ok */
+    --badge-ok-bg: #eefbea;
+    --badge-ok-border: #bfe8b8;
+    --badge-ok-text: #065f46;
+    
+    /* Badge colors - cancel/danger */
+    --badge-cxl-bg: #fef2f2;
+    --badge-cxl-border: #fca5a5;
+    --badge-cxl-text: #991b1b;
+}
+
+/* CSS Variables - Dark Mode: applied when .dark-mode class on <html> */
+.dark-mode {
+    --bg: #0f172a;              /* Dark background */
+    --fg: #f3f4f6;              /* Light text */
+    --card-bg: #1e293b;         /* Dark card background */
+    --border: #334155;          /* Dark borders */
+    --subtext: #cbd5e1;         /* Light muted text */
+    --bd: #334155;              /* Dark border alternative */
+    --muted: #cbd5e1;           /* Light muted text */
+    
+    /* Dark table colors */
+    --table-header: #1e293b;
+    --table-alt: #0f172a;
+    
+    /* Dark mode badges */
+    --badge-blue-bg: #1e3a8a;
+    --badge-blue-border: #3b82f6;
+    --badge-blue-text: #bfdbfe;
+    
+    --badge-ok-bg: #1b3c26;
+    --badge-ok-border: #4ade80;
+    --badge-ok-text: #bbf7d0;
+    
+    --badge-cxl-bg: #3f1d1d;
+    --badge-cxl-border: #f87171;
+    --badge-cxl-text: #fecaca;
+}
+
+/* Body: centers content with responsive width */
+body {
+    font-family: 'Inter', system-ui, Arial, sans-serif;
+    background: var(--bg);
+    max-width: 80%;             /* Width: 80% of viewport (was 1100px) */
+    margin: 3% auto;            /* Top margin: 3%, horizontally centered */
+    padding: 0 2%;              /* Side padding: 2% */
+    color: var(--fg);
+    transition: background 0.25s, color 0.25s; /* Smooth theme transition */
+    font-size: 1.1rem;          /* Base font size increased */
+}
+
+/* Container for dark mode toggle: aligns toggle to right */
+.toggle-container {
+    display: flex;
+    justify-content: flex-end;  /* Aligns content to right */
+    margin-bottom: 1.5rem;      /* Increased spacing */
+}
+
+/* Dark mode toggle: pill-shaped switch */
+.toggle-btn {
+    width: 56px;                /* Larger (was 46px) */
+    height: 28px;               /* Larger (was 22px) */
+    background: #d1d5db;
+    border-radius: 999px;       /* Creates pill shape */
+    position: relative;
+    cursor: pointer;
+}
+
+/* Toggle circle: slides inside toggle button */
+.toggle-circle {
+    width: 22px;                /* Larger (was 18px) */
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: 0.25s ease;     /* Smooth sliding animation */
+}
+
+/* Move toggle circle right when dark mode active */
+.dark-mode .toggle-circle { 
+    transform: translateX(28px); /* Adjusted for larger toggle (was 24px) */
+}
+
+/* Top navigation bar: flexbox layout with title and buttons */
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2%;          /* Percentage margin (was 1rem) */
+    gap: 1.5rem;                /* Increased gap (was 10px) */
+    flex-wrap: wrap;
+}
+
+/* Page title: GRADIENT TEXT from blue to indigo - this is the gradient effect you liked! */
+h1 {
+    font-size: 2.2rem;          /* Larger (was 28px) */
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(to right, var(--blue), var(--indigo)); /* Blue to indigo gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Makes gradient visible as text color */
+}
+
+/* Navigation buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.2rem;     /* Larger padding (was 8px 12px) */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    font-size: 1rem;            /* Larger (was 13px) */
+    font-weight: 600;
+    text-decoration: none;      /* Removes underline from links */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: 0.15s ease;     /* Smooth hover transition */
+    color: var(--fg);
+}
+
+/* Button hover: lifts up 1px and increases shadow */
+.btn:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px); /* Moves up 1px */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* Table container card */
+.table-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2.5%;              /* Percentage padding (was 20px) */
+    margin-bottom: 2%;          /* Percentage margin */
+    box-shadow: var(--shadow);
+    color: var(--fg);
+}
+
+/* Table: full width, collapsed borders */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 1rem;            /* Larger (was 13px) */
+    color: var(--fg);
+}
+
+/* Table cells: padding and borders */
+th, td { 
+    padding: 1rem 0.8rem;       /* Larger padding (was 10px 8px) */
+    text-align: left; 
+    border-bottom: 1px solid var(--border); 
+}
+
+/* Table header styling */
+thead { 
+    background: var(--table-header); 
+}
+
+th { 
+    font-weight: 700; 
+    color: var(--subtext);
+    border-bottom: 1px solid var(--border);
+}
+
+/* Alternate row coloring for readability */
+tbody tr:nth-child(even) { 
+    background: var(--table-alt); 
+}
+
+/* Status badges: pill-shaped indicators */
+.badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;     /* Larger padding (was 2px 7px) */
+    border-radius: 999px;       /* Pill shape */
+    font-size: 0.85rem;         /* Larger (was 11px) */
+    font-weight: 600;
+    margin-left: 0.5rem;        /* Spacing from text */
+}
+
+/* Success/OK badge: green theme (for "Attended") */
+.badge-ok {
+    background: var(--badge-ok-bg);
+    border: 1px solid var(--badge-ok-border);
+    color: var(--badge-ok-text);
+}
+
+/* Cancel badge: red theme (for "Canceled") */
+.badge-cxl {
+    background: var(--badge-cxl-bg);
+    border: 1px solid var(--badge-cxl-border);
+    color: var(--badge-cxl-text);
+}
+
+/* Blue badge: default theme (for "Upcoming") */
+.badge-blue {
+    background: var(--badge-blue-bg);
+    border: 1px solid var(--badge-blue-border);
+    color: var(--badge-blue-text);
+}
+
+/* Muted text: secondary/less important info */
+.muted { 
+    color: var(--muted); 
+    font-size: 1rem;            /* Larger (was 13px) */
+}
+
+/* Links: blue color, bold weight */
+a { 
+    color: var(--blue); 
+    font-weight: 600; 
+}
+
+/* Links in dark mode: lighter blue for visibility */
+.dark-mode a { 
+    color: #60a5fa; 
+}
+
+/* Responsive: adjust for smaller screens */
+@media(max-width: 900px) {
+    body {
+        max-width: 90%;         /* Wider on tablets */
+    }
+    
+    .top {
+        flex-direction: column; /* Stack title and buttons */
+        align-items: flex-start;
+    }
+    
+    .table-card {
+        padding: 2%;            /* Reduced padding on tablets */
+    }
+    
+    /* Make table scrollable on smaller screens */
+    .table-card {
+        overflow-x: auto;
+    }
+}
+
+@media(max-width: 600px) {
+    body {
+        max-width: 95%;         /* Almost full width on mobile */
+    }
+    
+    h1 {
+        font-size: 1.8rem;      /* Smaller title on mobile */
+    }
+    
+    table {
+        font-size: 0.9rem;      /* Slightly smaller table text on mobile */
+    }
+    
+    th, td {
+        padding: 0.8rem 0.5rem; /* Reduced padding on mobile */
+    }
+}

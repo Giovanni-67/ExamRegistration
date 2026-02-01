@@ -1,0 +1,216 @@
+/* Body: full width, uses CSS variables for theming */
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    font-family: system-ui, Arial, sans-serif;
+    color: var(--fg);
+    transition: background 0.25s, color 0.25s; /* Smooth theme transition */
+}
+
+/* CSS Variables - Light Mode */
+:root {
+    --csn-blue: #00345f;        /* Brand blue for header and buttons */
+    --csn-gold: #ffb81c;        /* Brand gold for logo */
+    --bg: #f5f6fa;              /* Page background */
+    --fg: #1a1a1a;              /* Primary text color */
+    --card-bg: #ffffff;         /* Card background */
+    --border: #dadada;          /* Border color */
+    --subtext: #6b6b6b;         /* Muted text */
+    --input-bg: #f2f3f5;        /* Input field background */
+}
+
+/* CSS Variables - Dark Mode: applied when .dark-mode class on <html> */
+.dark-mode {
+    --bg: #0f172a;              /* Dark background */
+    --fg: #f3f4f6;              /* Light text */
+    --card-bg: #1e293b;         /* Dark card background */
+    --border: #334155;          /* Dark borders */
+    --subtext: #cbd5e1;         /* Light muted text */
+    --input-bg: #1e293b;        /* Dark input background */
+}
+
+/* Links in dark mode: lighter blue for visibility */
+.dark-mode a {
+    color: #60a5fa;             /* Light blue in dark mode */
+}
+
+.dark-mode a:hover {
+    text-decoration: underline;
+}
+
+/* CSN Header: blue bar with logo and toggle */
+.csn-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;                  /* Space between items: 1rem */
+    padding: 1.5% 3%;           /* Padding: 1.5% top/bottom, 3% left/right */
+    background: var(--csn-blue);
+    color: white;
+    max-width: 90%;             /* Width: 90% of viewport */
+    margin: 0 auto 3%;          /* Bottom margin: 3%, horizontally centered */
+    border-radius: 0 0 12px 12px; /* Rounded bottom corners */
+    font-size: 1.1rem;          /* Larger text */
+}
+
+/* CSN logo: square with gold background, centered text */
+.csn-logo {
+    width: 44px;                /* Larger logo (was 34px) */
+    height: 44px;
+    border-radius: 8px;
+    background: var(--csn-gold);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.2rem;          /* Larger font (was 16px) */
+    color: var(--csn-blue);
+}
+
+/* Dark mode toggle: pill-shaped switch */
+.toggle-btn {
+    width: 56px;                /* Larger toggle (was 46px) */
+    height: 28px;
+    background: #d1d5db;
+    border-radius: 999px;       /* Creates pill shape */
+    position: relative;
+    cursor: pointer;
+    margin-left: auto;          /* Pushes toggle to right */
+    border: none;
+}
+
+/* Toggle circle: slides inside toggle button */
+.toggle-circle {
+    width: 22px;                /* Larger circle (was 18px) */
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: 0.25s ease;     /* Smooth sliding animation */
+}
+
+/* Move toggle circle right when dark mode active */
+.dark-mode .toggle-circle {
+    transform: translateX(28px); /* Moves 28px to right (was 24px) */
+}
+
+/* Login card: centered container for form */
+.login-card {
+    width: 60%;                 /* Width: 60% of viewport (increased from 50%) */
+    max-width: 750px;           /* Maximum width: 750px (increased from 600px) */
+    min-width: 400px;           /* Minimum width for mobile (increased from 320px) */
+    margin: 5% auto;            /* Top margin: 5%, horizontally centered */
+    background: var(--card-bg);
+    padding: 5% 4.5%;           /* Padding: 5% top/bottom, 4.5% left/right (increased from 4%/3.5%) */
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+/* Page title inside card */
+h1 {
+    font-size: 3rem;            /* 1.5x larger title (was 2rem) */
+    margin-bottom: 2rem;        /* Increased spacing */
+}
+
+/* Form labels */
+label {
+    font-size: 1.5rem;          /* 1.5x larger label text (was 1rem) */
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Input fields: email and password */
+input {
+    width: 100%;
+    padding: 1.5rem;            /* 1.5x larger padding (was 1rem) */
+    margin: 0.75rem 0 1.8rem;   /* 1.5x larger margins (was 0.5rem/1.2rem) */
+    border: 1px solid var(--border);
+    border-radius: 10px;        /* Slightly larger border radius */
+    font-size: 1.5rem !important; /* 1.5x larger font (was 1rem) - !important for autofill */
+    background: var(--input-bg);
+    color: var(--fg);
+}
+
+/* Fix autofill font size - forces browser to use our font size */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--fg) !important;
+    font-size: 1.5rem !important; /* Forces our font size on autofill */
+    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset !important; /* Preserves background color */
+    box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Firefox autofill fix */
+input:-moz-autofill,
+input:-moz-autofill:hover,
+input:-moz-autofill:focus {
+    font-size: 1.5rem !important;
+}
+
+/* Additional Opera/Chrome specific fix */
+input::placeholder {
+    font-size: 1.5rem;
+}
+
+input:autofill {
+    font-size: 1.5rem !important;
+}
+
+/* Submit button: full width, blue background */
+button[type="submit"] {
+    width: 100%;
+    padding: 1.5rem;            /* 1.5x larger padding (was 1rem) */
+    background: var(--csn-blue);
+    color: white;
+    border: none;
+    border-radius: 10px;        /* Slightly larger border radius */
+    font-size: 1.65rem;         /* 1.5x larger font (was 1.1rem) */
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 0.75rem;        /* Increased spacing */
+}
+
+/* Submit button hover: slight fade */
+button[type="submit"]:hover {
+    opacity: 0.92;              /* Reduces opacity to 92% */
+}
+
+/* Links: blue, bold, no underline by default */
+a { 
+    color: var(--csn-blue); 
+    font-weight: 600; 
+    text-decoration: none; 
+    font-size: 1.4rem;          /* 1.5x larger font (was 0.95rem) */
+}
+
+/* Link hover: add underline */
+a:hover { 
+    text-decoration: underline; 
+}
+
+/* Message list: left-aligned text for flash messages */
+ul { 
+    text-align: left;
+    font-size: 1.4rem;          /* 1.5x larger message text (was 0.95rem) */
+    line-height: 1.5;           /* Better line spacing */
+}
+
+/* Paragraph spacing */
+p {
+    font-size: 1.5rem;          /* 1.5x larger (was 1rem) */
+    margin: 1.8rem 0;           /* Increased spacing */
+}
+
+
+
+
+
+

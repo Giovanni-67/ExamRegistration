@@ -1,0 +1,251 @@
+/* Apply border-box to all elements: padding and border included in width/height */
+* { 
+    box-sizing: border-box; 
+}
+
+/* CSS Variables - Light Mode */
+:root {
+    --csn-blue: #00345f;        /* Brand blue */
+    --csn-gold: #ffb81c;        /* Brand gold */
+    --bg: #f5f7fa;              /* Page background */
+    --fg: #111827;              /* Primary text */
+    --card-bg: #ffffff;         /* Card background */
+    --border: #e5e7eb;          /* Border color */
+    --subtext: #6b7280;         /* Muted text */
+    --bd: #e5e7eb;              /* Alternative border variable */
+    --muted: #6b7280;           /* Duplicate of subtext */
+    --blue: #2563eb;            /* Blue for gradients and accents */
+    --indigo: #4f46e5;          /* Indigo for gradients */
+}
+
+/* CSS Variables - Dark Mode: applied when .dark-mode class on <html> */
+.dark-mode {
+    --bg: #0f172a;              /* Dark background */
+    --fg: #f3f4f6;              /* Light text */
+    --card-bg: #1e293b;         /* Dark card background */
+    --border: #334155;          /* Dark borders */
+    --subtext: #cbd5e1;         /* Light muted text */
+    --bd: #334155;              /* Dark border alternative */
+    --muted: #cbd5e1;           /* Light muted text */
+}
+
+/* Body: centers content with responsive width */
+body {
+    font-family: 'Inter', system-ui, Arial, sans-serif;
+    background: var(--bg);
+    max-width: 70%;             /* Width: 70% of viewport (was 1100px) */
+    margin: 3% auto;            /* Top margin: 3%, horizontally centered */
+    padding: 0 2%;              /* Side padding: 2% */
+    color: var(--fg);
+    transition: background 0.25s, color 0.25s; /* Smooth theme transition */
+    font-size: 1.1rem;          /* Base font size increased */
+}
+
+/* Container for dark mode toggle: aligns toggle to right */
+.toggle-container {
+    display: flex;
+    justify-content: flex-end;  /* Aligns content to right */
+    margin-bottom: 1.5rem;      /* Increased spacing */
+}
+
+/* Dark mode toggle: pill-shaped switch */
+.toggle-btn {
+    width: 56px;                /* Larger (was 46px) */
+    height: 28px;               /* Larger (was 22px) */
+    background: #d1d5db;
+    border-radius: 999px;       /* Creates pill shape */
+    position: relative;
+    cursor: pointer;
+}
+
+/* Toggle circle: slides inside toggle button */
+.toggle-circle {
+    width: 22px;                /* Larger (was 18px) */
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: 0.25s ease;     /* Smooth sliding animation */
+}
+
+/* Move toggle circle right when dark mode active */
+.dark-mode .toggle-circle { 
+    transform: translateX(28px); /* Adjusted for larger toggle (was 24px) */
+}
+
+/* Top navigation bar: flexbox layout with title and buttons */
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2%;          /* Percentage margin (was 1.2rem) */
+    flex-wrap: wrap;
+    gap: 1.5rem;                /* Increased gap (was 10px) */
+}
+
+/* Page title: gradient text from blue to indigo */
+h1 {
+    font-size: 2.2rem;          /* Larger (was 28px) */
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(to right, var(--blue), var(--indigo));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Makes gradient visible as text color */
+}
+
+/* Navigation buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.2rem;     /* Larger padding (was 8px 12px) */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    text-decoration: none;      /* Removes underline from links */
+    font-size: 1rem;            /* Larger (was 13px) */
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: 0.15s ease;     /* Smooth hover transition */
+    color: var(--fg);
+}
+
+/* Button hover: lifts up 1px and increases shadow */
+.btn:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px); /* Moves up 1px */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* Danger button: red theme for cancel action */
+.btn-danger,
+.btn-danger[type="submit"] {
+    background: #fef2f2;        /* Light red background */
+    border-color: #fca5a5;      /* Pink border */
+    color: #991b1b;             /* Dark red text */
+}
+
+.btn-danger:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #7f1d1d;
+}
+
+/* Appointment card container */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2% 2.5%;           /* Percentage padding (was 18px 20px) */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-top: 2%;             /* Percentage margin (was 1rem) */
+    margin-bottom: 1%;          /* Spacing between cards */
+    font-size: 1rem;            /* Larger (was 13px) */
+    color: var(--fg);
+}
+
+/* Row inside card: flexbox for left/right layout */
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;                  /* Increased gap (was 1rem) */
+}
+
+/* Flash messages list */
+ul.messages {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue); /* Blue accent bar on left */
+    border-radius: 10px;
+    padding: 1.2rem 1.8rem;     /* Larger padding (was 10px 16px) */
+    margin: 0 0 2%;             /* Percentage margin */
+    list-style: none;           /* Removes bullet points */
+    font-size: 1rem;            /* Larger (was 13px) */
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    color: var(--fg);
+}
+
+ul.messages li { 
+    margin: 0.5rem 0;           /* Increased spacing */
+}
+
+/* Muted text: secondary/less important info */
+.muted {
+    color: var(--muted);
+    font-size: 1rem;            /* Larger (was 13px) */
+}
+
+/* Links: blue color, bold weight */
+a { 
+    color: var(--blue); 
+    font-weight: 600; 
+    font-size: 1rem;            /* Larger (was 13px) */
+    text-decoration: none;      /* No underline by default */
+}
+
+/* Links in dark mode: lighter blue for visibility */
+.dark-mode a { 
+    color: #60a5fa;             /* Light blue in dark mode */
+}
+
+/* Action button container */
+.actions {
+    display: flex;
+    gap: 0.8rem;                /* Space between action buttons */
+    flex-wrap: wrap;            /* Wraps on small screens */
+}
+
+/* Responsive: adjust for smaller screens */
+@media(max-width: 900px) {
+    body {
+        max-width: 85%;         /* Wider on tablets */
+    }
+    
+    .top {
+        flex-direction: column; /* Stack title and buttons */
+        align-items: flex-start;
+    }
+    
+    .row {
+        flex-direction: column; /* Stack appointment details and button */
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+@media(max-width: 600px) {
+    body {
+        max-width: 95%;         /* Almost full width on mobile */
+    }
+    
+    h1 {
+        font-size: 1.8rem;      /* Smaller title on mobile */
+    }
+    
+    .actions {
+        width: 100%;
+        flex-direction: column; /* Stack action buttons */
+    }
+    
+    .btn {
+        width: 100%;            /* Full width buttons on mobile */
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

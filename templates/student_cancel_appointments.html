@@ -1,257 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!-- Restore saved theme BEFORE page renders -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem("theme");
-      if (saved === "dark") {
-        document.documentElement.classList.add("dark-mode");
-      }
-    })();
-  </script>
-
   <meta charset="utf-8" />
   <title>Cancel Appointments</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- GOOGLE FONT -->
+  <!-- Preconnect to Google Fonts CDN for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <!-- Load Inter font: weights 400, 500, 600, 700 -->
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
 
-  <style>
-    * { box-sizing: border-box; }
+  <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
-    /* -----------------------------------------
-       🔵 DARK MODE SYSTEM (ADDED)
-       ----------------------------------------- */
-    :root {
-      --csn-blue:#00345f;
-      --csn-gold:#ffb81c;
-
-      --bg:#f5f7fa;
-      --fg:#111827;
-      --card-bg:#ffffff;
-      --border:#e5e7eb;
-      --subtext:#6b7280;
-
-      /* your original vars preserved */
-      --bd: #e5e7eb;
-      --muted: #6b7280;
-      --blue: #2563eb;
-      --indigo: #4f46e5;
-    }
-    .dark-mode {
-      --bg:#0f172a;
-      --fg:#f3f4f6;
-      --card-bg:#1e293b;
-      --border:#334155;
-      --subtext:#cbd5e1;
-
-      --bd:#334155;
-      --muted:#cbd5e1;
-    }
-
-    body {
-      font-family: 'Inter', system-ui, Arial, sans-serif;
-      background: var(--bg);
-      max-width: 1100px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      color: var(--fg);
-      transition: background 0.25s, color 0.25s;
-    }
-
-    /* -----------------------------------------
-       🔵 DARK MODE TOGGLE (ADDED)
-       ----------------------------------------- */
-    .toggle-container {
-      display:flex;
-      justify-content:flex-end;
-      margin-bottom:1rem;
-    }
-    .toggle-btn {
-      width:46px;
-      height:22px;
-      background:#d1d5db;
-      border-radius:999px;
-      position:relative;
-      cursor:pointer;
-    }
-    .toggle-circle {
-      width:18px;
-      height:18px;
-      background:white;
-      border-radius:50%;
-      position:absolute;
-      top:2px;
-      left:3px;
-      transition:0.25s ease;
-    }
-    .dark-mode .toggle-circle { transform:translateX(24px); }
-
-    /* ----------------------------------------- */
-
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.2rem;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0;
-      background: linear-gradient(to right, var(--blue), var(--indigo));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--card-bg);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-      cursor: pointer;
-      transition: 0.15s ease;
-      color: var(--fg);
-    }
-    .btn:hover {
-      background:#f3f4f6;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-
-    .btn-danger,
-    .btn-danger[type="submit"] {
-      background:#fef2f2;
-      border-color:#fca5a5;
-      color:#991b1b;
-    }
-    .btn-danger:hover {
-      background:#fee2e2;
-      border-color:#f87171;
-      color:#7f1d1d;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:18px 20px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.04);
-      margin-top:1rem;
-      margin-bottom:.6rem;
-      font-size:13px;
-      color:var(--fg);
-    }
-
-    .row {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:1rem;
-    }
-
-    ul.messages {
-      background: var(--card-bg);
-      border:1px solid var(--border);
-      border-left:4px solid var(--blue);
-      border-radius:10px;
-      padding:10px 16px;
-      margin:0 0 1rem;
-      list-style:none;
-      font-size:13px;
-      box-shadow:0 1px 4px rgba(0,0,0,0.03);
-      color: var(--fg);
-    }
-    ul.messages li { margin:.35rem 0; }
-
-    .muted {
-      color: var(--muted);
-      font-size:13px;
-    }
-
-    /* 🔧 Links readable in dark mode */
-    a { color: var(--blue); font-weight:600; font-size:13px; text-decoration:none; }
-    .dark-mode a { color:#60a5fa; }
-
-    @media(max-width:760px){
-      .top{flex-direction:column;align-items:flex-start;}
-      .row{flex-direction:column;align-items:flex-start;gap:6px;}
-    }
-  </style>
-
-<script>
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-
-    // Save preference
-    const mode = document.body.classList.contains("dark-mode")
-      ? "dark"
-      : "light";
-
-    localStorage.setItem("theme", mode);
-  }
-</script>
-
+  <!-- Load page-specific styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/student_cancel_appointments.css') }}" />
 </head>
 <body>
 
-  <!-- 🔵 DARK MODE SWITCH -->
+  <!-- Dark mode toggle switch, positioned top-right -->
   <div class="toggle-container">
     <div class="toggle-btn" onclick="toggleDarkMode()">
       <div class="toggle-circle"></div>
     </div>
   </div>
 
+  <!-- Top navigation bar with title and action buttons -->
   <div class="top">
     <h1>Cancel Appointments</h1>
     <div class="actions">
-      <a class="btn" href="{{ url_for('student_portal') }}">Back to Dashboard</a>
-      <a class="btn" href="{{ url_for('student_make_appointment') }}">Make Appointment</a>
+      <!-- Link to student_dashboard route -->
+      <a class="btn" href="{{ url_for('student_dashboard') }}">Back to Dashboard</a>
+      <!-- Link to student_make_appointment route -->
+      <a class="btn" href="{{ url_for('student_make_appointment') }}">Schedule Appointment</a>
+      <!-- Link to student_history route -->
       <a class="btn" href="{{ url_for('student_history') }}">Appointment History</a>
+      <!-- Link to logout route -->
       <a class="btn" href="{{ url_for('logout') }}">Logout</a>
     </div>
   </div>
 
+  <!-- Flash messages from Flask: displays list of (category, message) tuples -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <ul class="messages">
         {% for c, m in messages %}
+          <!-- c: string (category like 'success', 'error'), m: string (message text) -->
           <li><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
         {% endfor %}
       </ul>
     {% endif %}
   {% endwith %}
 
+  <!-- active_regs: list of active registration objects -->
   {% if active_regs and active_regs|length > 0 %}
     {% for r in active_regs %}
+      <!-- Individual appointment card -->
       <div class="card">
         <div class="row">
+          <!-- Left side: appointment details -->
           <div>
+            <!-- r.exam_code: string, exam identifier -->
             <div><strong>{{ r.exam_code }}</strong></div>
             <div class="muted">
+              <!-- r.session_datetime: datetime object, formatted to "Jan 15, 2024" @ "02:30 PM" -->
               {{ r.session_datetime.strftime("%b %d, %Y") }}
               @ {{ r.session_datetime.strftime("%I:%M %p") }}
+              <!-- r.campus_name, r.building_name, r.room_number: all strings -->
               • {{ r.campus_name }} — {{ r.building_name }} {{ r.room_number }}
+              <!-- r.booked: integer (current registrations), r.capacity: integer (max seats) -->
               <div>Seats: {{ r.booked }}/{{ r.capacity }}</div>
             </div>
           </div>
 
+          <!-- Right side: cancel button -->
           <div class="actions">
+            <!-- Form submits POST to student_cancel route with registration_id parameter -->
+            <!-- r.registration_id: integer, unique identifier for this registration -->
             <form method="post" action="{{ url_for('student_cancel', registration_id=r.registration_id) }}">
               <button type="submit" class="btn-danger">Cancel</button>
             </form>
@@ -260,7 +88,8 @@
       </div>
     {% endfor %}
   {% else %}
-    <p class="muted">You don’t have any upcoming appointments to cancel.</p>
+    <!-- Message when no appointments exist -->
+    <p class="muted">You don't have any upcoming appointments to cancel.</p>
   {% endif %}
 
 </body>

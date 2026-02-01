@@ -1,0 +1,284 @@
+/* Body: full width, no margin, uses CSS variables for theming */
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    font-family: Arial, sans-serif;
+    color: var(--fg);
+    font-size: 1.1rem;          /* Base font size increased */
+}
+
+/* CSS Variables - Light Mode */
+:root {
+    --csn-blue: #00345f;        /* Brand blue for header */
+    --csn-gold: #ffb81c;        /* Brand gold for logo */
+    --bg: #f5f6fa;              /* Page background */
+    --fg: #1a1a1a;              /* Primary text */
+    --card-bg: #ffffff;         /* Card/panel backgrounds */
+    --border: #dadada;          /* Borders */
+    --subtext: #6b6b6b;         /* Muted text */
+    --input-bg: #f5f6fa;        /* Input backgrounds */
+    --table-header-bg: #f3f4f6; /* Calendar header background */
+    --table-row-alt: #fafafa;   /* Alternate row color */
+}
+
+/* CSS Variables - Dark Mode: applied when .dark-mode class on <html> */
+.dark-mode {
+    --bg: #0f172a;              /* Dark background */
+    --fg: #f3f4f6;              /* Light text */
+    --card-bg: #1e293b;         /* Dark card background */
+    --border: #334155;          /* Dark borders */
+    --subtext: #cbd5e1;         /* Light muted text */
+    --input-bg: #1e293b;        /* Dark input backgrounds */
+    --table-header-bg: #334155; /* Dark header background */
+    --table-row-alt: #1e293b;   /* Dark alternate rows */
+}
+
+/* Header bar: flexbox layout with logo, title, and controls */
+.csn-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;                /* Increased gap (was 10px) */
+    padding: 1.5% 3%;           /* Percentage padding (was 14px 24px) */
+    background: var(--csn-blue);
+    color: white;
+    font-size: 1.2rem;          /* Larger text */
+}
+
+/* CSN logo: square with gold background, centered text */
+.csn-logo {
+    width: 50px;                /* Larger (was 34px) */
+    height: 50px;
+    border-radius: 10px;        /* Slightly larger radius */
+    background: var(--csn-gold);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.4rem;          /* Larger (was 16px) */
+    color: var(--csn-blue);
+}
+
+/* Toolbar buttons: used in header and calendar navigation */
+.toolbar-btn {
+    padding: 0.8rem 1.2rem;     /* Larger padding (was 6px 12px) */
+    background: white;
+    color: var(--csn-blue);
+    border-radius: 8px;         /* Slightly larger radius */
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 1rem;            /* Larger (was 13px) */
+    font-weight: 600;
+    text-decoration: none;      /* Removes underline from links */
+}
+
+.toolbar-btn:hover {
+    background: #f1f1f1;        /* Slight gray on hover */
+}
+
+/* Dark mode toggle: pill-shaped switch */
+.toggle-btn {
+    width: 56px;                /* Larger (was 46px) */
+    height: 28px;               /* Larger (was 22px) */
+    background: #d1d5db;
+    border-radius: 999px;       /* Creates pill shape */
+    position: relative;
+    cursor: pointer;
+}
+
+/* Toggle circle: slides inside toggle button */
+.toggle-circle {
+    width: 22px;                /* Larger (was 18px) */
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: all 0.25s ease; /* Smooth slide animation */
+}
+
+/* Move toggle circle right when dark mode active */
+.dark-mode .toggle-circle {
+    transform: translateX(28px); /* Adjusted for larger toggle (was 24px) */
+}
+
+/* Stats grid: 4 equal columns for stat cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns, equal width */
+    gap: 2%;                    /* Percentage gap (was 16px) */
+    margin: 3% auto;            /* Percentage margin (was 26px auto) */
+    max-width: 90%;             /* Percentage width (was 1100px) */
+}
+
+/* Individual stat card */
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5% 3%;           /* Percentage padding (was 18px 22px) */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+
+/* Stat title: label above number (e.g., "Total Registrations") */
+.stat-title {
+    font-size: 1rem;            /* Larger (was 13px) */
+    color: var(--subtext);
+    margin-bottom: 0.5rem;      /* Increased spacing */
+}
+
+/* Stat value: large number displayed in card */
+.stat-value {
+    font-size: 2.2rem;          /* Larger (was 24px) */
+    font-weight: bold;
+}
+
+/* Confirmation banner: green success message */
+.confirm-banner {
+    padding: 1.2rem;            /* Larger padding (was 10px) */
+    background: #e3fce3;        /* Light green */
+    border: 1px solid #b7e2b7;  /* Green border */
+    border-radius: 10px;        /* Slightly larger radius */
+    font-size: 1.1rem;          /* Larger (was 14px) */
+    font-weight: 600;
+    margin: 2% auto;            /* Percentage margin (was 12px auto) */
+    max-width: 90%;             /* Percentage width (was 1050px) */
+    color: #0a6b0a;             /* Dark green text */
+    text-align: center;
+}
+
+/* Main grid: 2 columns (calendar + sidebar), 2fr means calendar is 2x wider */
+.grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Calendar: 2/3 width, Sidebar: 1/3 width */
+    gap: 2%;                    /* Percentage gap (was 1rem) */
+    margin-top: 2%;             /* Percentage margin */
+    max-width: 90%;             /* Percentage width (was 1100px) */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Calendar container */
+.calendar {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;           /* Clips children to border radius */
+    background: var(--card-bg);
+}
+
+/* Calendar header: navigation and month/year display */
+.cal-header {
+    display: flex;
+    justify-content: space-between; /* Spaces out prev, title, next */
+    align-items: center;
+    padding: 1.5% 2.5%;         /* Percentage padding (was 10px 18px) */
+    background: var(--table-header-bg);
+    font-size: 1.1rem;          /* Larger text */
+}
+
+/* Calendar grid: 7 columns for days of week */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 equal columns */
+}
+
+/* Day of week headers and individual date cells */
+.dow, .cell {
+    padding: 1%;                /* Percentage padding (was 0.5rem) */
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    min-height: 150px;          /* Taller cells (was 110px) */
+}
+
+/* Day of week headers (Sun, Mon, etc.) */
+.dow {
+    font-weight: 600;
+    text-align: center;
+    font-size: 1rem;            /* Larger (was default) */
+}
+
+/* Remove right border from last column */
+.cell:last-child, .dow:last-child {
+    border-right: 0;
+}
+
+/* Day number in top-left of cell */
+.day {
+    font-size: 1.1rem;          /* Larger (was 0.9rem) */
+    margin-bottom: 0.5rem;      /* Increased spacing */
+    font-weight: 600;
+}
+
+/* Session card: displays exam session info within calendar cell */
+.session {
+    font-size: 0.95rem;         /* Larger (was 13px) */
+    margin: 0.6rem 0;           /* Increased spacing (was 5px 0) */
+    padding: 0.8rem;            /* Larger padding (was 9px) */
+    background: #eff6ff;        /* Light blue background */
+    border: 1px solid #2563eb25; /* Very light blue border */
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.06);
+    color: #111827;             /* Dark text for light mode */
+    line-height: 1.4;           /* Better line spacing */
+}
+
+/* Session card in dark mode */
+.dark-mode .session {
+    background: #1e293b;        /* Dark background */
+    border-color: #334155;      /* Dark border */
+    color: #f3f4f6;             /* Light text */
+}
+
+/* Muted text within session cards in dark mode */
+.dark-mode .session .muted {
+    color: #d1d5db;             /* Lighter gray for visibility */
+}
+
+/* Sidebar: upcoming sessions list */
+.sidebar {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2%;                /* Percentage padding (was 14px) */
+    background: var(--card-bg);
+}
+
+/* Sidebar heading */
+.sidebar h3 {
+    font-size: 1.3rem;          /* Larger heading */
+    margin-top: 0;
+}
+
+/* Sidebar list items */
+.sidebar ul {
+    font-size: 1rem;            /* Larger text */
+    line-height: 1.6;           /* Better spacing */
+}
+
+.sidebar li {
+    margin-bottom: 1rem;        /* More space between items */
+}
+
+/* Muted text: secondary/less important info */
+.muted {
+    color: var(--subtext);
+    font-size: 0.95rem;         /* Larger (was 13px) */
+}
+
+/* Responsive: stack grid on smaller screens */
+@media(max-width: 900px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+    }
+    
+    .grid {
+        grid-template-columns: 1fr; /* Stack calendar and sidebar */
+    }
+}
+
+@media(max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: 1fr; /* 1 column on mobile */
+    }
+}
+

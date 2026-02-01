@@ -311,7 +311,7 @@
   <div class="top">
     <h1>Student Dashboard</h1>
     <div>
-      <a class="btn" href="{{ url_for('student_make_appointment') }}">Make Appointment</a>
+      <a class="btn" href="{{ url_for('student_make_appointment') }}">Schedule Appointment</a>
       <a class="btn" href="{{ url_for('student_cancel_page') }}">Cancel Appointments</a>
       <a class="btn" href="{{ url_for('student_history') }}">Appointment History</a>
       <a class="btn" href="{{ url_for('logout') }}">Logout</a>
@@ -333,9 +333,9 @@
     <!-- CALENDAR -->
     <div class="calendar">
       <div class="cal-header">
-        <a class="btn" href="{{ url_for('student_portal', year=prev_year, month=prev_month) }}">&larr;</a>
+        <a class="btn" href="{{ url_for('student_dashboard', year=prev_year, month=prev_month) }}">&larr;</a>
         <span>{{ year }} — {{ cal.month_name[month] }}</span>
-        <a class="btn" href="{{ url_for('student_portal', year=next_year, month=next_month) }}">&rarr;</a>
+        <a class="btn" href="{{ url_for('student_dashboard', year=next_year, month=next_month) }}">&rarr;</a>
       </div>
 
       <div class="cal-grid">

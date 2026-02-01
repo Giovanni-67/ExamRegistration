@@ -166,7 +166,7 @@ def fetch_upcoming_for_student(user_id: int, limit: int = 10):
 @app.route("/")
 def home():
     if session.get("user_id"):
-        return redirect(url_for("student_portal" if session.get("role") == "student" else "faculty_portal"))
+        return redirect(url_for("student_dashboard" if session.get("role") == "student" else "faculty_dashboard"))
     return render_template("home.html", user_name=session.get("user_name"))
 
 # --- SIGN UP ---
@@ -250,7 +250,7 @@ def login():
     session["role"]      = user.get("role", "student")
 
     flash("Logged in!", "success")
-    return redirect(url_for("student_portal" if session["role"] == "student" else "faculty_portal"))
+    return redirect(url_for("student_dashboard" if session["role"] == "student" else "faculty_dashboard"))
 
 # --- LOGOUT ---
 @app.route("/logout")
@@ -265,7 +265,7 @@ def logout():
 @app.route("/student")
 @login_required
 @student_required
-def student_portal():
+def student_dashboard():
     # --- figure out which month to show ---
     try:
         year  = int(request.args.get("year", 0)) or date.today().year
@@ -375,7 +375,7 @@ def student_portal():
         by_day.setdefault(day_key, []).append(s)
 
     return render_template(
-        "student_portal.html",
+        "student_dashboard.html",
         cal=cal,
         year=year,
         month=month,
@@ -448,7 +448,7 @@ def student_make_appointment():
     if row and row["active_count"] >= 3:
         cur.close(); conn.close()
         flash("You already have 3 active exam appointments. Cancel one before booking another.", "error")
-        return redirect(url_for("student_portal"))
+        return redirect(url_for("student_dashboard"))
 
     session_id = request.form.get("session_id", "").strip()
     if not session_id.isdigit():
@@ -483,7 +483,7 @@ def student_make_appointment():
     if cur.fetchone():
         cur.close(); conn.close()
         flash("You are already registered for that session.", "info")
-        return redirect(url_for("student_portal"))
+        return redirect(url_for("student_dashboard"))
 
     # Try to revive a previously cancelled registration for this session
     cur.execute(
@@ -534,7 +534,7 @@ def student_make_appointment():
         return redirect(url_for("student_confirmation"))
     except Exception:
         flash("Appointment booked successfully!", "success")
-        return redirect(url_for("student_portal"))
+        return redirect(url_for("student_dashboard"))
 
     # GET: show only future sessions NOT enrolled by this user yet
     conn = get_conn()
@@ -698,7 +698,7 @@ def student_history():
 @app.route("/faculty/<int:year>/<int:month>")
 @login_required
 @faculty_required
-def faculty_portal(year, month):
+def faculty_dashboard(year, month):
     now = datetime.now()
     year = year or now.year
     month = month or now.month
@@ -715,7 +715,7 @@ def faculty_portal(year, month):
     next_month_dt = (datetime(year, month, 15) + timedelta(days=31))
 
     return render_template(
-        "faculty_portal.html",
+        "faculty_dashboard.html",
         year=year,
         month=month,
         cal=pycal,
@@ -755,7 +755,7 @@ def faculty_new_session():
             )
             conn.commit()
             flash("Exam session created.", "success")
-            return redirect(url_for("faculty_portal"))
+            return redirect(url_for("faculty_dashboard"))
         except mysql.connector.Error as e:
             conn.rollback()
             flash(f"Could not create session: {e.msg}", "error")

@@ -1,266 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!-- Restore saved theme BEFORE page renders -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem("theme");
-      if (saved === "dark") {
-        document.documentElement.classList.add("dark-mode");
-      }
-    })();
-  </script>
-
   <meta charset="utf-8" />
   <title>Appointment History</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- GOOGLE FONT -->
+  <!-- Preconnect to Google Fonts CDN for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <!-- Load Inter font: weights 400, 500, 600, 700 -->
   <link 
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
     rel="stylesheet" 
   />
 
-  <style>
-    * { box-sizing:border-box; }
+  <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
-    /* -----------------------------------------
-       🔵 DARK MODE SYSTEM (ADDED)
-       ----------------------------------------- */
-    :root {
-      --csn-blue:#00345f;
-      --csn-gold:#ffb81c;
-
-      --bg:#f5f7fa;
-      --fg:#111827;
-      --card-bg:#ffffff;
-      --border:#e5e7eb;
-      --subtext:#6b7280;
-
-      /* your originals preserved */
-      --bd:#e5e7eb;
-      --muted:#6b7280;
-      --blue:#2563eb;
-      --indigo:#4f46e5;
-      --shadow:0 2px 8px rgba(0,0,0,0.04);
-
-      --table-header:#f9fafb;
-      --table-alt:#f9fafb;
-      --badge-blue-bg:#dbeafe;
-      --badge-blue-border:#93c5fd;
-      --badge-blue-text:#1e40af;
-
-      --badge-ok-bg:#eefbea;
-      --badge-ok-border:#bfe8b8;
-      --badge-ok-text:#065f46;
-
-      --badge-cxl-bg:#fef2f2;
-      --badge-cxl-border:#fca5a5;
-      --badge-cxl-text:#991b1b;
-    }
-
-    .dark-mode {
-      --bg:#0f172a;
-      --fg:#f3f4f6;
-      --card-bg:#1e293b;
-      --border:#334155;
-      --subtext:#cbd5e1;
-
-      --bd:#334155;
-      --muted:#cbd5e1;
-
-      --table-header:#1e293b;
-      --table-alt:#0f172a;
-
-      --badge-blue-bg:#1e3a8a;
-      --badge-blue-border:#3b82f6;
-      --badge-blue-text:#bfdbfe;
-
-      --badge-ok-bg:#1b3c26;
-      --badge-ok-border:#4ade80;
-      --badge-ok-text:#bbf7d0;
-
-      --badge-cxl-bg:#3f1d1d;
-      --badge-cxl-border:#f87171;
-      --badge-cxl-text:#fecaca;
-    }
-
-    body {
-      font-family:'Inter', system-ui, Arial, sans-serif;
-      background:var(--bg);
-      max-width:1100px;
-      margin:2rem auto;
-      padding:0 1rem;
-      color:var(--fg);
-      transition:background 0.25s, color 0.25s;
-    }
-
-    /* -----------------------------------------
-       🔵 DARK MODE TOGGLE (ADDED)
-       ----------------------------------------- */
-    .toggle-container {
-      display:flex;
-      justify-content:flex-end;
-      margin-bottom:1rem;
-    }
-    .toggle-btn {
-      width:46px;
-      height:22px;
-      background:#d1d5db;
-      border-radius:999px;
-      position:relative;
-      cursor:pointer;
-    }
-    .toggle-circle {
-      width:18px;
-      height:18px;
-      background:white;
-      border-radius:50%;
-      position:absolute;
-      top:2px;
-      left:3px;
-      transition:0.25s ease;
-    }
-    .dark-mode .toggle-circle { transform:translateX(24px); }
-
-    /* ----------------------------------------- */
-
-    .top {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:1rem;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    h1 {
-      font-size:28px;
-      font-weight:700;
-      margin:0;
-      background:linear-gradient(to right,var(--blue),var(--indigo));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-    }
-
-    .btn {
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border:1px solid var(--border);
-      border-radius:10px;
-      background:var(--card-bg);
-      font-size:13px;
-      font-weight:600;
-      text-decoration:none;
-      box-shadow:0 1px 3px rgba(0,0,0,0.07);
-      cursor:pointer;
-      transition:0.15s ease;
-      color:var(--fg);
-    }
-    .btn:hover {
-      background:#f3f4f6;
-      transform:translateY(-1px);
-      box-shadow:0 3px 6px rgba(0,0,0,0.1);
-    }
-
-    .table-card {
-      background:var(--card-bg);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:20px;
-      margin-bottom:1.4rem;
-      box-shadow:var(--shadow);
-      color:var(--fg);
-    }
-
-    table { 
-      width:100%; 
-      border-collapse:collapse; 
-      font-size:13px; 
-      color:var(--fg);
-    }
-    th,td { 
-      padding:10px 8px; 
-      text-align:left; 
-      border-bottom:1px solid var(--border); 
-    }
-    thead { background:var(--table-header); }
-    th { 
-      font-weight:700; 
-      color:var(--subtext);
-      border-bottom:1px solid var(--border);
-    }
-
-    tbody tr:nth-child(even){ background:var(--table-alt); }
-
-    .badge {
-      display:inline-block;
-      padding:2px 7px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:600;
-      margin-left:6px;
-    }
-    .badge-ok {
-      background:var(--badge-ok-bg);
-      border:1px solid var(--badge-ok-border);
-      color:var(--badge-ok-text);
-    }
-    .badge-cxl {
-      background:var(--badge-cxl-bg);
-      border:1px solid var(--badge-cxl-border);
-      color:var(--badge-cxl-text);
-    }
-    .badge-blue {
-      background:var(--badge-blue-bg);
-      border:1px solid var(--badge-blue-border);
-      color:var(--badge-blue-text);
-    }
-
-    .muted { color:var(--muted); font-size:13px; }
-
-    /* readable links in dark mode */
-    a { color:var(--blue); font-weight:600; }
-    .dark-mode a { color:#60a5fa; }
-
-    @media(max-width:760px){
-      .top{flex-direction:column;align-items:flex-start;}
-      .table-card{padding:14px;}
-    }
-  </style>
-
-<script>
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-
-    // Save preference
-    const mode = document.body.classList.contains("dark-mode")
-      ? "dark"
-      : "light";
-
-    localStorage.setItem("theme", mode);
-  }
-</script>
-
+  <!-- Load page-specific styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/student_history.css') }}" />
 </head>
 <body>
 
-  <!-- 🔵 DARK MODE SWITCH -->
+  <!-- Dark mode toggle switch, positioned top-right -->
   <div class="toggle-container">
     <div class="toggle-btn" onclick="toggleDarkMode()">
       <div class="toggle-circle"></div>
     </div>
   </div>
 
+  <!-- Top navigation bar with title and action buttons -->
   <div class="top">
+    <!-- Title with gradient effect: blue to indigo -->
     <h1>Appointment History</h1>
     <div>
-      <a class="btn" href="{{ url_for('student_portal') }}">&larr; Back to Calendar</a>
+      <!-- Link to student_dashboard route -->
+      <a class="btn" href="{{ url_for('student_dashboard') }}">&larr; Back to Calendar</a>
+      <!-- Link to logout route -->
       <a class="btn" href="{{ url_for('logout') }}">Logout</a>
     </div>
   </div>
 
+  <!-- rows: list of appointment history objects -->
   {% if rows and rows|length > 0 %}
   <div class="table-card">
     <table>
@@ -278,28 +58,37 @@
       <tbody>
         {% for r in rows %}
           <tr>
+            <!-- r.exam_code: string, exam identifier -->
             <td><strong>{{ r.exam_code }}</strong></td>
+            <!-- r.session_datetime: datetime object, formatted to "Jan 15, 2024" -->
             <td>{{ r.session_datetime.strftime('%b %d, %Y') }}</td>
+            <!-- r.session_datetime: formatted to "02:30 PM" -->
             <td>{{ r.session_datetime.strftime('%I:%M %p') }}</td>
+            <!-- r.duration_minutes: integer, defaults to 90 if null -->
             <td>{{ r.duration_minutes or 90 }} min</td>
+            <!-- r.campus_name, r.building_name, r.room_number: all strings -->
             <td>{{ r.campus_name }} — {{ r.building_name }} {{ r.room_number }}</td>
 
-<td>
-  {% if r.cancelled %}
-      <span class="badge badge-cxl">
-        Canceled{% if r.cancelled_at %} ({{ r.cancelled_at.strftime('%b %d, %Y') }}){% endif %}
-      </span>
-  {% else %}
-      {% if r.status == "Upcoming" %}
-          <span class="badge badge-blue">Upcoming</span>
-      {% elif r.status == "Attended" %}
-          <span class="badge badge-ok">Attended</span>
-      {% else %}
-          <span class="badge badge-ok">{{ r.status }}</span>
-      {% endif %}
-  {% endif %}
-</td>
+            <!-- Status badge: conditional rendering based on r.cancelled and r.status -->
+            <td>
+              {% if r.cancelled %}
+                  <!-- r.cancelled: boolean, r.cancelled_at: datetime object or null -->
+                  <span class="badge badge-cxl">
+                    Canceled{% if r.cancelled_at %} ({{ r.cancelled_at.strftime('%b %d, %Y') }}){% endif %}
+                  </span>
+              {% else %}
+                  <!-- r.status: string, values like "Upcoming", "Attended", etc. -->
+                  {% if r.status == "Upcoming" %}
+                      <span class="badge badge-blue">Upcoming</span>
+                  {% elif r.status == "Attended" %}
+                      <span class="badge badge-ok">Attended</span>
+                  {% else %}
+                      <span class="badge badge-ok">{{ r.status }}</span>
+                  {% endif %}
+              {% endif %}
+            </td>
 
+            <!-- r.registered_at: datetime object or null, formatted to "Jan 15, 2024 02:30 PM" -->
             <td class="muted">
               {% if r.registered_at %}
                 {{ r.registered_at.strftime('%b %d, %Y %I:%M %p') }}
@@ -315,6 +104,7 @@
   </div>
 
   {% else %}
+    <!-- Message when no appointment history exists -->
     <p class="muted">No appointments yet.</p>
   {% endif %}
 

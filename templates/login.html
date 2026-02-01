@@ -1,184 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!-- Restore saved theme BEFORE page renders -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem("theme");
-      if (saved === "dark") {
-        document.documentElement.classList.add("dark-mode");
-      }
-    })();
-  </script>
-
   <meta charset="UTF-8">
-  <meta charset="utf-8" />
   <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- 🎨 Decoration Layer (does not remove or rewrite base logic) -->
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg);
-      font-family: system-ui, Arial, sans-serif;
-      color: var(--fg);
-      transition: background 0.25s, color 0.25s;
-    }
-    :root {
-      --csn-blue: #00345f;
-      --csn-gold: #ffb81c;
-      --bg: #f5f6fa;
-      --fg: #1a1a1a;
-      --card-bg: #ffffff;
-      --border: #dadada;
-      --subtext: #6b6b6b;
-      --input-bg: #f2f3f5;
-    }
-    .dark-mode {
-      --bg: #0f172a;
-      --fg: #f3f4f6;
-      --card-bg: #1e293b;
-      --border: #334155;
-      --subtext: #cbd5e1;
-      --input-bg: #1e293b;
-    }
+  <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
-    /* 🔧 FIX: make links visible in dark mode */
-    .dark-mode a {
-      color: #60a5fa;
-    }
-    .dark-mode a:hover {
-      text-decoration: underline;
-    }
-
-    .csn-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 24px;
-      background: var(--csn-blue);
-      color: white;
-      max-width: 1200px;
-      margin: 0 auto 25px;
-      border-radius: 0 0 12px 12px;
-    }
-    .csn-logo {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      background: var(--csn-gold);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--csn-blue);
-    }
-    .toggle-btn {
-      width: 46px;
-      height: 22px;
-      background: #d1d5db;
-      border-radius: 999px;
-      position: relative;
-      cursor: pointer;
-      margin-left: auto;
-      border: none;
-    }
-    .toggle-circle {
-      width: 18px;
-      height: 18px;
-      background: white;
-      border-radius: 50%;
-      position: absolute;
-      top: 2px;
-      left: 3px;
-      transition: 0.25s ease;
-    }
-    .dark-mode .toggle-circle {
-      transform: translateX(24px);
-    }
-    .login-card {
-      width: 380px;
-      margin: 60px auto;
-      background: var(--card-bg);
-      padding: 30px 26px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      text-align: center;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 6px 0 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 14px;
-      background: var(--input-bg);
-      color: var(--fg);
-    }
-    button[type="submit"] {
-      width: 100%;
-      padding: 12px;
-      background: var(--csn-blue);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    button[type="submit"]:hover {
-      opacity: 0.92;
-    }
-    a { color: var(--csn-blue); font-weight: 600; text-decoration: none; font-size: 13px; }
-    a:hover { text-decoration: underline; }
-    ul { text-align: left; }
-  </style>
-
-<script>
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-
-    // Save preference
-    const mode = document.body.classList.contains("dark-mode")
-      ? "dark"
-      : "light";
-
-    localStorage.setItem("theme", mode);
-  }
-</script>
+  <!-- Load page-specific styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
 </head>
 
 <body>
 
-  <!-- CSN Header (decorative only) -->
+  <!-- CSN Header with logo, title, and dark mode toggle -->
   <div class="csn-header">
+      <!-- Logo badge: CSN initials on gold background -->
       <div class="csn-logo">CSN</div>
       <div>Exam Registration System</div>
+      <!-- Toggle switch: calls toggleDarkMode() from base.js -->
       <div class="toggle-btn" onclick="toggleDarkMode()">
           <div class="toggle-circle"></div>
       </div>
   </div>
 
-  <!-- 🎯 Login Card Wrapper -->
+  <!-- Login card: centered form container -->
   <div class="login-card">
 
     <h1>Login</h1>
 
+    <!-- Flash messages from Flask: displays list of (category, message) tuples -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <ul>
           {% for c,m in messages %}
+            <!-- c: string (category like 'success', 'error'), m: string (message text) -->
             <li><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
           {% endfor %}
         </ul>
       {% endif %}
     {% endwith %}
 
+    <!-- Login form: submits POST to login route, returns email and password -->
     <form method="post" action="{{ url_for('login') }}">
       <label>Email</label>
+      <!-- Email input: validates student (10digits@student.csn.edu) or faculty (firstname.lastname@csn.edu) format -->
       <input
         type="text"
         name="email"
@@ -188,11 +55,14 @@
       /><br />
 
       <label>Password</label>
+      <!-- Password input: returns plain text password -->
       <input type="password" name="password" required /><br />
 
+      <!-- Submit button: sends form data to login route -->
       <button type="submit">Login</button>
     </form>
 
+    <!-- Link to signup route -->
     <p><a href="{{ url_for('signup') }}">Create an account</a></p>
 
   </div>
