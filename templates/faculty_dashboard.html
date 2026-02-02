@@ -1,122 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character encoding for proper text rendering -->
     <meta charset="UTF-8">
+
+    <!-- Page title shown in browser tab -->
     <title>Faculty Dashboard</title>
 
+    <!-- Shared JavaScript (dark mode toggle, global helpers, etc.) -->
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+    <!-- Page-specific CSS styling -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/faculty_dashboard.css') }}">
 </head>
 
 <body>
 
+<!-- ================= HEADER / TOOLBAR ================= -->
 <div class="csn-header">
+
+    <!-- Institution branding -->
     <div class="csn-logo">CSN</div>
+
+    <!-- Page title -->
     <div>Faculty Dashboard</div>
 
+    <!-- Right-aligned toolbar controls -->
     <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+
+        <!-- Dark mode toggle button -->
         <div class="toggle-btn" onclick="toggleDarkMode()">
             <div class="toggle-circle"></div>
         </div>
 
-        <a class="toolbar-btn" href="{{ url_for('faculty_new_session') }}">+ Create New Exam Session</a>
-        <a class="toolbar-btn" href="{{ url_for('logout') }}">Logout</a>
+        <!-- Link to create a new exam session -->
+        <a class="toolbar-btn" href="{{ url_for('faculty_new_session') }}">
+            + Create New Exam Session
+        </a>
+
+        <!-- Logout link -->
+        <a class="toolbar-btn" href="{{ url_for('logout') }}">
+            Logout
+        </a>
     </div>
 </div>
 
+<!-- ================= STATISTICS SUMMARY ================= -->
 <div class="stats-grid">
+
+    <!-- Total registrations -->
     <div class="stat-card">
         <div class="stat-title">Total Registrations</div>
         <div class="stat-value">{{ total }}</div>
     </div>
+
+    <!-- Confirmed registrations -->
     <div class="stat-card">
         <div class="stat-title">Confirmed</div>
         <div class="stat-value">{{ confirmed }}</div>
     </div>
+
+    <!-- Pending registrations -->
     <div class="stat-card">
         <div class="stat-title">Pending</div>
         <div class="stat-value">{{ pending }}</div>
     </div>
+
+    <!-- Registrations occurring this week -->
     <div class="stat-card">
         <div class="stat-title">This Week</div>
         <div class="stat-value">{{ this_week }}</div>
     </div>
 </div>
 
+<!-- ================= CONFIRMATION BANNER ================= -->
+<!-- Displayed only when a registration confirmation flag is set -->
 {% if show_confirmation %}
 <div class="confirm-banner">Registration Confirmed!</div>
 {% endif %}
 
+<!-- ================= MAIN LAYOUT GRID ================= -->
 <div class="grid">
 
-<!-- ================= CALENDAR ================= -->
+<!-- ================= CALENDAR SECTION ================= -->
 <div class="calendar">
 
+    <!-- Calendar header with navigation -->
     <div class="cal-header">
+
+        <!-- Navigate to previous month -->
         <a class="toolbar-btn"
            href="{{ url_for('faculty_dashboard', year=prev_year, month=prev_month) }}">
             &larr; Prev
         </a>
 
-        <div><strong>{{ year }}</strong> – {{ cal.month_name[month] }}</div>
+        <!-- Display current year and month -->
+        <div>
+            <strong>{{ year }}</strong> – {{ cal.month_name[month] }}
+        </div>
 
+        <!-- Navigate to next month -->
         <a class="toolbar-btn"
            href="{{ url_for('faculty_dashboard', year=next_year, month=next_month) }}">
             Next &rarr;
         </a>
     </div>
 
+    <!-- Calendar grid layout -->
     <div class="cal-grid">
 
+        <!-- Day-of-week headers -->
         {% for d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
             <div class="dow">{{ d }}</div>
         {% endfor %}
 
-        {# ---- FIX: offset empty cells before day 1 ---- #}
+        <!-- Determine which weekday the month starts on -->
         {% set first_weekday = cal.monthrange(year, month)[0] %}
+
+        <!-- Convert Python weekday (Mon=0) to Sunday-based grid offset -->
         {% set offset = (first_weekday + 1) % 7 %}
 
+        <!-- Insert empty cells before day 1 to align calendar -->
         {% for _ in range(offset) %}
             <div class="cell empty"></div>
         {% endfor %}
 
-        {# ---- actual days ---- #}
+        <!-- Generate each day cell for the month -->
         {% for day in range(1, cal.monthrange(year, month)[1] + 1) %}
+
+            <!-- ISO date string used as dictionary key -->
             {% set iso = year ~ '-' ~ '%02d'|format(month) ~ '-' ~ '%02d'|format(day) %}
+
             <div class="cell">
+
+                <!-- Calendar day number -->
                 <div class="day">{{ day }}</div>
 
+                <!-- Render all sessions scheduled for this day -->
                 {% for s in by_day.get(iso, []) %}
                     <div class="session">
-                        <div><strong>{{ s.exam_code }}</strong> @ {{ s.time_str }}–{{ s.end_str }}</div>
-                        <div>{{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
-                        <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
-                        <div>Duration: {{ s.duration_minutes }} min</div>
+
+                        <!-- Exam code and time range -->
+                        <div>
+                            <strong>{{ s.exam_code }}</strong>
+                            @ {{ s.time_str }}–{{ s.end_str }}
+                        </div>
+
+                        <!-- Location details -->
+                        <div>
+                            {{ s.campus_name }} •
+                            {{ s.building_name }} {{ s.room_number }}
+                        </div>
+
+                        <!-- Seat availability -->
+                        <div>
+                            Seats: {{ s.booked }}/{{ s.capacity }}
+                        </div>
+
+                        <!-- Session duration -->
+                        <div>
+                            Duration: {{ s.duration_minutes }} min
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         {% endfor %}
-
     </div>
 </div>
 
 <!-- ================= SIDEBAR ================= -->
 <aside class="sidebar">
+
+    <!-- Sidebar title -->
     <h3>Upcoming Sessions</h3>
 
+    <!-- List upcoming exam sessions -->
     {% if upcoming %}
         <ul>
             {% for s in upcoming %}
                 <li style="margin-bottom:0.6rem;">
+
+                    <!-- Exam identifier -->
                     <strong>{{ s.exam_code }}</strong><br>
+
+                    <!-- Date and time -->
                     {{ s.session_datetime.strftime('%Y-%m-%d') }}
                     {{ s.time_str }}–{{ s.end_str }}<br>
-                    {{ s.campus_name }} ({{ s.building_name }} {{ s.room_number }})<br>
-                    Seats: {{ s.booked }}/{{ s.capacity }} • {{ s.duration_minutes }} min
+
+                    <!-- Location -->
+                    {{ s.campus_name }}
+                    ({{ s.building_name }} {{ s.room_number }})<br>
+
+                    <!-- Capacity and duration -->
+                    Seats: {{ s.booked }}/{{ s.capacity }}
+                    • {{ s.duration_minutes }} min
                 </li>
             {% endfor %}
         </ul>
     {% else %}
+        <!-- Displayed when no upcoming sessions exist -->
         <p class="muted">No upcoming sessions.</p>
     {% endif %}
 </aside>
