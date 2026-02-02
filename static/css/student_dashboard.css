@@ -1,0 +1,362 @@
+/* Apply border-box to all elements: padding and border included in width/height */
+* { 
+    box-sizing: border-box; 
+}
+
+/* CSS Variables - Light Mode */
+:root {
+    --bg: #f5f7fa;              /* Page background */
+    --fg: #111827;              /* Primary text */
+    --card-bg: #ffffff;         /* Card/panel background */
+    --border: #e5e7eb;          /* Border color */
+    --subtext: #6b7280;         /* Muted text */
+    
+    /* Calendar colors */
+    --cal-header-bg: #f9fafb;   /* Calendar header background */
+    --dow-bg: #f3f4f6;          /* Day of week header background */
+    --cell-bg: #ffffff;         /* Calendar cell background */
+    --cell-hover: #f9fafb;      /* Calendar cell hover background */
+    
+    /* Session card colors */
+    --session-bg: #eff6ff;      /* Light blue for session cards */
+    --session-border: #2563eb25; /* Very light blue border */
+    
+    /* Badge colors */
+    --badge-blue-bg: #dbeafe;
+    --badge-blue-border: #93c5fd;
+    --badge-blue-text: #1e40af;
+    
+    --badge-full-bg: #fffbeb;
+    --badge-full-border: #f59e0b30;
+    --badge-full-text: #b45309;
+}
+
+/* CSS Variables - Dark Mode: applied when .dark-mode class on <html> */
+.dark-mode {
+    --bg: #0f172a;              /* Dark background */
+    --fg: #f3f4f6;              /* Light text */
+    --card-bg: #1e293b;         /* Dark card background */
+    --border: #334155;          /* Dark borders */
+    --subtext: #cbd5e1;         /* Light muted text */
+    
+    /* Dark calendar colors */
+    --cal-header-bg: #1e293b;
+    --dow-bg: #334155;
+    --cell-bg: #1e293b;
+    --cell-hover: #0f172a;
+    
+    /* Dark session colors */
+    --session-bg: #1e293b;
+    --session-border: #334155;
+    
+    /* Dark badge colors */
+    --badge-blue-bg: #1e3a8a;
+    --badge-blue-border: #3b82f6;
+    --badge-blue-text: #bfdbfe;
+    
+    --badge-full-bg: #3f2d13;
+    --badge-full-border: #fbbf24;
+    --badge-full-text: #fde68a;
+}
+
+/* Body: centers content with responsive width */
+body {
+    font-family: 'Inter', system-ui, Arial, sans-serif;
+    background: var(--bg);
+    max-width: 80%;             /* Width: 80% of viewport (was 1100px) */
+    margin: 3% auto;            /* Top margin: 3%, horizontally centered */
+    padding: 0 2%;              /* Side padding: 2% */
+    color: var(--fg);
+    transition: background 0.25s, color 0.25s; /* Smooth theme transition */
+    font-size: 1.1rem;          /* Base font size increased */
+}
+
+/* Container for dark mode toggle: aligns toggle to right */
+.toggle-container {
+    display: flex;
+    justify-content: flex-end;  /* Aligns content to right */
+    margin-bottom: 1.5rem;      /* Increased spacing */
+}
+
+/* Dark mode toggle: pill-shaped switch */
+.toggle-btn {
+    width: 56px;                /* Larger (was 46px) */
+    height: 28px;               /* Larger (was 22px) */
+    background: #d1d5db;
+    border-radius: 999px;       /* Creates pill shape */
+    position: relative;
+    cursor: pointer;
+}
+
+/* Toggle circle: slides inside toggle button */
+.toggle-circle {
+    width: 22px;                /* Larger (was 18px) */
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: 0.25s ease;     /* Smooth sliding animation */
+}
+
+/* Move toggle circle right when dark mode active */
+.dark-mode .toggle-circle { 
+    transform: translateX(28px); /* Adjusted for larger toggle (was 24px) */
+}
+
+/* Top navigation bar: flexbox layout with title and buttons */
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2%;          /* Percentage margin (was 1rem) */
+}
+
+/* Page title: GRADIENT TEXT from blue to indigo */
+h1 {
+    font-size: 2.2rem;          /* Larger (was 28px) */
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(to right, #2563eb, #4f46e5); /* Blue to indigo gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Makes gradient visible as text color */
+}
+
+/* Navigation buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.2rem;     /* Larger padding (was 8px 12px) */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    text-decoration: none;      /* Removes underline from links */
+    font-size: 1rem;            /* Larger (was 13px) */
+    font-weight: 600;
+    transition: 0.15s ease;     /* Smooth hover transition */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    color: var(--fg);
+}
+
+/* Button hover: lifts up 1px and increases shadow */
+.btn:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px); /* Moves up 1px */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* Main grid: 2 columns (calendar + sidebar), 2fr means calendar is 2x wider */
+.grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Calendar: 2/3 width, Sidebar: 1/3 width */
+    gap: 2%;                    /* Percentage gap (was 1rem) */
+}
+
+/* Calendar container */
+.calendar {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;           /* Clips children to border radius */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Calendar header: navigation and month/year display */
+.cal-header {
+    display: flex;
+    justify-content: space-between; /* Spaces out prev, title, next */
+    align-items: center;
+    padding: 1.5% 2%;           /* Percentage padding (was 12px 18px) */
+    background: var(--cal-header-bg);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 1rem;            /* Larger (was 14px) */
+    color: var(--fg);
+}
+
+/* Calendar grid: 7 columns for days of week */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 equal columns */
+}
+
+/* Day of week headers (Sun, Mon, etc.) */
+.dow {
+    text-align: center;
+    font-size: 1rem;            /* Larger (was 13px) */
+    font-weight: 700;
+    padding: 1rem 0;            /* Larger padding (was 10px 0) */
+    background: var(--dow-bg);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+}
+
+/* Remove right border from last column */
+.dow:last-child { 
+    border-right: 0; 
+}
+
+/* Calendar cells: individual date cells */
+.cell {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    min-height: 150px;          /* Taller cells (was 120px) */
+    padding: 1.2rem;            /* Larger padding (was 10px) */
+    background: var(--cell-bg);
+    transition: 0.1s;
+    color: var(--fg);
+}
+
+/* Cell hover effect */
+.cell:hover { 
+    background: var(--cell-hover); 
+}
+
+/* Remove right border from last column */
+.cell:last-child { 
+    border-right: 0; 
+}
+
+/* Empty cells (for offset at beginning of month) */
+.cell.empty {
+    background: var(--cal-header-bg);
+}
+
+/* Muted text color */
+.muted { 
+    color: var(--subtext); 
+}
+
+/* Day number in top-left of cell */
+.day {
+    font-size: 1.1rem;          /* Larger (was 14px) */
+    font-weight: 700;
+    margin-bottom: 0.6rem;      /* Increased spacing (was 6px) */
+    color: var(--fg);
+}
+
+/* Session card: displays exam session info within calendar cell */
+.session {
+    font-size: 0.95rem;         /* Larger (was 13px) */
+    margin: 0.6rem 0;           /* Increased spacing (was 5px 0) */
+    padding: 0.8rem;            /* Larger padding (was 9px) */
+    background: var(--session-bg);
+    border: 1px solid var(--session-border);
+    border-radius: 10px;
+    color: var(--fg);
+    box-shadow: 0 1px 3px rgba(37,99,235,0.06);
+}
+
+/* Status badges: pill-shaped indicators */
+.badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;     /* Larger padding (was 2px 7px) */
+    border-radius: 999px;       /* Pill shape */
+    font-size: 0.85rem;         /* Larger (was 11px) */
+    font-weight: 600;
+    margin-left: 0.5rem;        /* Spacing from text (was 6px) */
+    background: var(--badge-blue-bg);
+    border: 1px solid var(--badge-blue-border);
+    color: var(--badge-blue-text);
+}
+
+/* Full badge: yellow/orange theme */
+.badge.full {
+    background: var(--badge-full-bg);
+    border-color: var(--badge-full-border);
+    color: var(--badge-full-text);
+}
+
+/* Muted text: secondary/less important info */
+.muted-text { 
+    color: var(--subtext); 
+    font-size: 1rem;            /* Larger (was 13px) */
+}
+
+/* Sidebar: upcoming sessions list */
+.sidebar {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2%;                /* Percentage padding (was 18px) */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    color: var(--fg);
+}
+
+/* Sidebar heading */
+.sidebar h3 {
+    margin: 0 0 1rem;           /* Increased spacing (was 12px) */
+    font-size: 1.3rem;          /* Larger (was 16px) */
+    font-weight: 700;
+}
+
+/* Sidebar list */
+.sidebar ul { 
+    padding-left: 1.2rem;       /* Larger padding (was 14px) */
+    margin: 0;
+    font-size: 1rem;            /* Larger text */
+    line-height: 1.6;           /* Better spacing */
+}
+
+/* Flash messages list */
+.messages {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 2%;          /* Percentage margin (was 14px) */
+    background: var(--card-bg);
+    border-left: 4px solid #2563eb; /* Blue accent bar on left */
+    border-radius: 10px;
+    padding: 1.2rem 1.8rem;     /* Larger padding (was 10px 16px) */
+    border: 1px solid var(--border);
+    font-size: 1rem;            /* Larger (was 13px) */
+    color: var(--fg);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+/* Responsive: adjust for smaller screens */
+@media(max-width: 900px) {
+    body {
+        max-width: 90%;         /* Wider on tablets */
+    }
+    
+    .grid { 
+        grid-template-columns: 1fr; /* Stack calendar and sidebar */
+    }
+    
+    .top { 
+        flex-direction: column; /* Stack title and buttons */
+        gap: 1rem; 
+        align-items: flex-start; 
+    }
+}
+
+@media(max-width: 600px) {
+    body {
+        max-width: 95%;         /* Almost full width on mobile */
+    }
+    
+    h1 {
+        font-size: 1.8rem;      /* Smaller title on mobile */
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

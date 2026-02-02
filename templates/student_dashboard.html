@@ -1,371 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!-- Restore saved theme BEFORE page renders -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem("theme");
-      if (saved === "dark") {
-        document.documentElement.classList.add("dark-mode");
-      }
-    })();
-  </script>
-
   <meta charset="utf-8" />
   <title>Student Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- GOOGLE FONT -->
+  <!-- Preconnect to Google Fonts CDN for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <!-- Load Inter font: weights 400, 500, 600, 700 -->
   <link 
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
     rel="stylesheet" 
   />
 
-  <style>
-    * { box-sizing: border-box; }
+  <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
-    /* ----------------------------------------------------
-       🔵 DARK MODE SYSTEM (ADDED — DOES NOT REMOVE ORIGINALS)
-       ---------------------------------------------------- */
-    :root {
-      --bg:#f5f7fa;
-      --fg:#111827;
-      --card-bg:#ffffff;
-      --border:#e5e7eb;
-      --subtext:#6b7280;
-
-      --cal-header-bg:#f9fafb;
-      --dow-bg:#f3f4f6;
-      --cell-bg:#ffffff;
-      --cell-hover:#f9fafb;
-
-      --session-bg:#eff6ff;
-      --session-border:#2563eb25;
-
-      --badge-blue-bg:#dbeafe;
-      --badge-blue-border:#93c5fd;
-      --badge-blue-text:#1e40af;
-
-      --badge-full-bg:#fffbeb;
-      --badge-full-border:#f59e0b30;
-      --badge-full-text:#b45309;
-    }
-
-    .dark-mode {
-      --bg:#0f172a;
-      --fg:#f3f4f6;
-      --card-bg:#1e293b;
-      --border:#334155;
-      --subtext:#cbd5e1;
-
-      --cal-header-bg:#1e293b;
-      --dow-bg:#334155;
-      --cell-bg:#1e293b;
-      --cell-hover:#0f172a;
-
-      --session-bg:#1e293b;
-      --session-border:#334155;
-
-      --badge-blue-bg:#1e3a8a;
-      --badge-blue-border:#3b82f6;
-      --badge-blue-text:#bfdbfe;
-
-      --badge-full-bg:#3f2d13;
-      --badge-full-border:#fbbf24;
-      --badge-full-text:#fde68a;
-    }
-
-    /* ---------------------------------------------------- */
-    body {
-      font-family: 'Inter', system-ui, Arial, sans-serif;
-      background: var(--bg);
-      max-width: 1100px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      color: var(--fg);
-      transition: background 0.25s, color 0.25s;
-    }
-
-    /* DARK MODE TOGGLE BUTTON */
-    .toggle-container {
-      display:flex;
-      justify-content:flex-end;
-      margin-bottom:1rem;
-    }
-    .toggle-btn {
-      width:46px;
-      height:22px;
-      background:#d1d5db;
-      border-radius:999px;
-      position:relative;
-      cursor:pointer;
-    }
-    .toggle-circle {
-      width:18px;
-      height:18px;
-      background:white;
-      border-radius:50%;
-      position:absolute;
-      top:2px;
-      left:3px;
-      transition:0.25s ease;
-    }
-    .dark-mode .toggle-circle { transform:translateX(24px); }
-
-    /* TOP BAR */
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0;
-      background: linear-gradient(to right,#2563eb,#4f46e5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* BUTTONS */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--card-bg);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      transition: 0.15s ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-      color: var(--fg);
-    }
-    .btn:hover {
-      background: #f3f4f6;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-
-    /* GRID */
-    .grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1rem;
-    }
-
-    /* CALENDAR */
-    .calendar {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-
-    .cal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 18px;
-      background: var(--cal-header-bg);
-      border-bottom: 1px solid var(--border);
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--fg);
-    }
-
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-    }
-
-    .dow {
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 10px 0;
-      background: var(--dow-bg);
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      color: var(--fg);
-    }
-    .dow:last-child { border-right: 0; }
-
-    .cell {
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      min-height: 120px;
-      padding: 10px;
-      background: var(--cell-bg);
-      transition: 0.1s;
-      color: var(--fg);
-    }
-    .cell:hover { background: var(--cell-hover); }
-    .cell:last-child { border-right: 0; }
-
-    .muted { color: var(--subtext); }
-
-    .day {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--fg);
-    }
-
-    .session {
-      font-size: 13px;
-      margin: 5px 0;
-      padding: 9px;
-      background: var(--session-bg);
-      border: 1px solid var(--session-border);
-      border-radius: 10px;
-      color: var(--fg);
-      box-shadow: 0 1px 3px rgba(37,99,235,0.06);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 7px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-left: 6px;
-      background: var(--badge-blue-bg);
-      border: 1px solid var(--badge-blue-border);
-      color: var(--badge-blue-text);
-    }
-
-    .badge.full {
-      background: var(--badge-full-bg);
-      border-color: var(--badge-full-border);
-      color: var(--badge-full-text);
-    }
-
-    .muted-text { color: var(--subtext); font-size: 13px; }
-
-    /* SIDEBAR */
-    .sidebar {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      color: var(--fg);
-    }
-    .sidebar h3 {
-      margin: 0 0 12px;
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .sidebar ul { padding-left: 14px; margin: 0; }
-
-    /* FLASH MESSAGES */
-    .messages {
-      list-style: none;
-      padding-left: 0;
-      margin-bottom: 14px;
-      background: var(--card-bg);
-      border-left: 4px solid #2563eb;
-      border-radius: 10px;
-      padding: 10px 16px;
-      border: 1px solid var(--border);
-      font-size: 13px;
-      color: var(--fg);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-    }
-
-    /* MOBILE */
-    @media(max-width: 760px){
-      .grid { grid-template-columns: 1fr; }
-      .top { flex-direction: column; gap: 12px; align-items: flex-start; }
-    }
-  </style>
-
-<script>
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-
-    // Save preference
-    const mode = document.body.classList.contains("dark-mode")
-      ? "dark"
-      : "light";
-
-    localStorage.setItem("theme", mode);
-  }
-</script>
-
+  <!-- Load page-specific styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/student_dashboard.css') }}" />
 </head>
 <body>
 
-  <!-- DARK MODE TOGGLE -->
+  <!-- Dark mode toggle switch, positioned top-right -->
   <div class="toggle-container">
     <div class="toggle-btn" onclick="toggleDarkMode()">
       <div class="toggle-circle"></div>
     </div>
   </div>
 
+  <!-- Top navigation bar with title and action buttons -->
   <div class="top">
+    <!-- Title with gradient effect: blue to indigo -->
     <h1>Student Dashboard</h1>
     <div>
+      <!-- Link to student_make_appointment route -->
       <a class="btn" href="{{ url_for('student_make_appointment') }}">Schedule Appointment</a>
+      <!-- Link to student_cancel_page route -->
       <a class="btn" href="{{ url_for('student_cancel_page') }}">Cancel Appointments</a>
+      <!-- Link to student_history route -->
       <a class="btn" href="{{ url_for('student_history') }}">Appointment History</a>
+      <!-- Link to logout route -->
       <a class="btn" href="{{ url_for('logout') }}">Logout</a>
     </div>
   </div>
 
+  <!-- Flash messages from Flask: displays list of (category, message) tuples -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <ul class="messages">
         {% for c,m in messages %}
+          <!-- c: string (category like 'success', 'error'), m: string (message text) -->
           <li><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
         {% endfor %}
       </ul>
     {% endif %}
   {% endwith %}
 
+  <!-- Main content: 2-column grid (calendar + sidebar) -->
   <div class="grid">
 
-    <!-- CALENDAR -->
+    <!-- Calendar: monthly view of exam sessions -->
     <div class="calendar">
+      <!-- Calendar header: navigation and month/year display -->
       <div class="cal-header">
+        <!-- prev_year, prev_month: integers for previous month link -->
         <a class="btn" href="{{ url_for('student_dashboard', year=prev_year, month=prev_month) }}">&larr;</a>
+        <!-- year: integer, month: integer (1-12), cal: Python calendar module -->
         <span>{{ year }} — {{ cal.month_name[month] }}</span>
+        <!-- next_year, next_month: integers for next month link -->
         <a class="btn" href="{{ url_for('student_dashboard', year=next_year, month=next_month) }}">&rarr;</a>
       </div>
 
+      <!-- Calendar grid: 7 columns for days of week -->
       <div class="cal-grid">
+        <!-- Day headers: renders Sun, Mon, Tue, Wed, Thu, Fri, Sat -->
         {% for d in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
           <div class="dow">{{ d }}</div>
         {% endfor %}
 
-        {% set first_weekday = cal.weekday(year, month, 1) %}
-        {% set lead = (first_weekday + 1) % 7 %}
-        {% for _ in range(lead) %}
-          <div class="cell muted"></div>
+        <!-- OFFSET: empty cells before day 1 to align with correct day of week -->
+        <!-- cal.monthrange(year, month)[0]: returns weekday of first day (0=Monday, 6=Sunday) -->
+        {% set first_weekday = cal.monthrange(year, month)[0] %}
+        <!-- Convert to Sunday-based (0=Sunday, 6=Saturday) -->
+        {% set offset = (first_weekday + 1) % 7 %}
+
+        <!-- Render empty cells for offset -->
+        {% for _ in range(offset) %}
+          <div class="cell empty"></div>
         {% endfor %}
 
-        {% set last_day = cal.monthrange(year, month)[1] %}
-        {% for day in range(1, last_day+1) %}
+        <!-- Actual day cells: loops through all days in month -->
+        <!-- cal.monthrange(year, month)[1]: returns last day number of month -->
+        {% for day in range(1, cal.monthrange(year, month)[1] + 1) %}
+          <!-- iso: string in YYYY-MM-DD format for dict lookup -->
           {% set iso = (year|string) ~ '-' ~ ('%02d' % month) ~ '-' ~ ('%02d' % day) %}
+          
           <div class="cell">
+            <!-- Day number -->
             <div class="day">{{ day }}</div>
 
+            <!-- by_day: dict mapping ISO dates to list of session objects -->
+            <!-- Each session has: exam_code, session_datetime, campus_name, building_name, room_number, booked, capacity, already_registered, is_full -->
             {% for s in by_day.get(iso, []) %}
               <div class="session">
                 <div>
+                  <!-- s.exam_code: string, s.session_datetime: datetime object -->
                   {{ s.exam_code }} {{ s.session_datetime.strftime("%I:%M %p") }}
+                  <!-- s.already_registered: boolean, s.is_full: boolean -->
                   {% if s.already_registered %}
                     <span class="badge">Registered</span>
                   {% elif s.is_full %}
                     <span class="badge full">Full</span>
                   {% endif %}
                 </div>
+                <!-- s.campus_name, s.building_name, s.room_number: all strings -->
                 <div>{{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}</div>
+                <!-- s.booked: integer (current registrations), s.capacity: integer (max seats) -->
                 <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
               </div>
             {% endfor %}
@@ -374,21 +124,27 @@
       </div>
     </div>
 
-    <!-- SIDEBAR -->
+    <!-- Sidebar: list of upcoming sessions -->
     <aside class="sidebar">
       <h3>Upcoming Sessions</h3>
+      <!-- upcoming: list of session objects, empty list if none -->
       {% if upcoming %}
         <ul>
           {% for s in upcoming %}
             <li style="margin-bottom: 12px;">
+              <!-- s.exam_code: string -->
               {{ s.exam_code }}<br/>
+              <!-- s.session_datetime: datetime object, formatted to "Jan 15, 2024 02:30 PM" -->
               {{ s.session_datetime.strftime('%b %d, %Y %I:%M %p') }}<br/>
+              <!-- s.campus_name, s.building_name, s.room_number: strings -->
               {{ s.campus_name }} • {{ s.building_name }} {{ s.room_number }}<br/>
+              <!-- s.already_registered: boolean, s.is_full: boolean -->
               {% if s.already_registered %}
                 <span class="badge">Registered</span>
               {% elif s.is_full %}
                 <span class="badge full">Full</span>
               {% endif %}
+              <!-- s.booked: int, s.capacity: int -->
               <div>Seats: {{ s.booked }}/{{ s.capacity }}</div>
             </li>
           {% endfor %}
