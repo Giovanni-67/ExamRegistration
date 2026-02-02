@@ -1,190 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!-- Restore saved theme BEFORE page renders -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem("theme");
-      if (saved === "dark") {
-        document.documentElement.classList.add("dark-mode");
-      }
-    })();
-  </script>
-
   <meta charset="utf-8" />
   <title>Registration Confirmed</title>
+  <!-- Responsive scaling for mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- GOOGLE FONT -->
+  <!-- Preconnect to Google Fonts CDN for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <!-- Load Inter font: weights 400, 500, 600, 700 -->
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
 
-  <style>
-    * { box-sizing:border-box; }
+  <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
-    /* -----------------------------------------
-       🔵 DARK MODE SYSTEM (ADDED)
-       ----------------------------------------- */
-    :root {
-      --csn-blue:#00345f;
-      --csn-gold:#ffb81c;
-
-      --bg:#f5f7fa;
-      --fg:#111827;
-      --card-bg:#ffffff;
-      --border:#e5e7eb;
-      --subtext:#6b7280;
-
-      /* your originals preserved */
-      --bd:#e5e7eb;
-      --muted:#6b7280;
-      --blue:#2563eb;
-      --indigo:#4f46e5;
-
-      /* special success-card green */
-      --success-bg:#f9ffef;
-      --success-border:#d3eac3;
-    }
-
-    .dark-mode {
-      --bg:#0f172a;
-      --fg:#f3f4f6;
-      --card-bg:#1e293b;
-      --border:#334155;
-      --subtext:#cbd5e1;
-
-      --bd:#334155;
-      --muted:#cbd5e1;
-
-      /* darker green but still "success" */
-      --success-bg:#1a2e12;
-      --success-border:#3a5f27;
-    }
-
-    body {
-      font-family:'Inter', system-ui, Arial, sans-serif;
-      background:var(--bg);
-      max-width:1100px;
-      margin:2rem auto;
-      padding:0 1rem;
-      color:var(--fg);
-      transition:background 0.25s, color 0.25s;
-    }
-
-    /* -----------------------------------------
-       🔵 DARK MODE TOGGLE (ADDED)
-       ----------------------------------------- */
-    .toggle-container {
-      display:flex;
-      justify-content:flex-end;
-      margin-bottom:1rem;
-    }
-    .toggle-btn {
-      width:46px;
-      height:22px;
-      background:#d1d5db;
-      border-radius:999px;
-      position:relative;
-      cursor:pointer;
-    }
-    .toggle-circle {
-      width:18px;
-      height:18px;
-      background:white;
-      border-radius:50%;
-      position:absolute;
-      top:2px;
-      left:3px;
-      transition:0.25s ease;
-    }
-    .dark-mode .toggle-circle { transform:translateX(24px); }
-
-    /* ----------------------------------------- */
-
-    h1 {
-      font-size:28px;
-      font-weight:700;
-      margin:0 0 1rem;
-      background:linear-gradient(to right,var(--blue),var(--indigo));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-    }
-
-    .card {
-      background:var(--success-bg);
-      border:1px solid var(--success-border);
-      border-radius:14px;
-      padding:16px 20px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.04);
-      font-size:14px;
-      line-height:1.4;
-      color:var(--fg);
-    }
-
-    .btn {
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      border:1px solid var(--border);
-      border-radius:10px;
-      background:var(--card-bg);
-      text-decoration:none;
-      font-size:13px;
-      font-weight:600;
-      box-shadow:0 1px 3px rgba(0,0,0,0.07);
-      cursor:pointer;
-      transition:0.15s ease;
-      margin-right:.5rem;
-      color:var(--fg);
-    }
-    .btn:hover {
-      background:#f3f4f6;
-      transform:translateY(-1px);
-      box-shadow:0 3px 5px rgba(0,0,0,0.1);
-    }
-
-    p.muted { color:var(--muted); font-size:13px; }
-
-    /* readable link color in dark mode */
-    .dark-mode a { color:#60a5fa; }
-
-  </style>
-
-<script>
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-
-    // Save preference
-    const mode = document.body.classList.contains("dark-mode")
-      ? "dark"
-      : "light";
-
-    localStorage.setItem("theme", mode);
-  }
-</script>
-
+  <!-- Load global + page-specific styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/student_confirmation.css') }}" />
 </head>
 <body>
 
-  <!-- 🔵 TOGGLE SWITCH -->
+  <!-- Dark mode toggle switch (top-right) -->
   <div class="toggle-container">
     <div class="toggle-btn" onclick="toggleDarkMode()">
       <div class="toggle-circle"></div>
     </div>
   </div>
 
+  <!-- Page headline: success confirmation -->
   <h1>You're enrolled!</h1>
 
-  <div class="card">
+  <!-- Success message card -->
+  <div class="card success-card">
+    <!-- Short confirmation message -->
     <p>Your exam appointment has been successfully registered. It will now appear on your dashboard calendar.</p>
   </div>
 
-  <div style="margin-top:1rem;">
+  <!-- Actions: primary navigation after confirmation -->
+  <div class="actions">
+    <!-- Link to student_dashboard route -->
     <a class="btn" href="{{ url_for('student_dashboard') }}">Back to Dashboard</a>
+    <!-- Link to student_history route -->
     <a class="btn" href="{{ url_for('student_history') }}">View Appointment History</a>
   </div>
 

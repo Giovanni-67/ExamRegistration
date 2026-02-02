@@ -1,0 +1,91 @@
+/* Page layout: width, spacing, and base sizing */
+body {
+    /* Keep the content centered and readable */
+    max-width: 70%;
+    /* Vertical spacing and horizontal centering */
+    margin: 3% auto;
+    /* Breathing room on the sides */
+    padding: 0 2%;
+    /* Slightly larger base type */
+    font-size: 1.1rem;
+}
+
+/* Success card colors for light mode */
+:root {
+    /* Light success background and border */
+    --success-bg: #f9ffef;
+    --success-border: #d3eac3;
+}
+
+/* Success card colors for dark mode */
+.dark-mode {
+    /* Dark success background and border */
+    --success-bg: #1a2e12;
+    --success-border: #3a5f27;
+}
+
+/* Page title: gradient, bold, and spaced */
+h1 {
+    /* Large, bold headline */
+    font-size: 2.2rem;
+    font-weight: 700;
+    /* Space between title and card */
+    margin: 0 0 2%;
+    /* Gradient text using theme colors */
+    background: linear-gradient(to right, var(--blue), var(--indigo));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Confirmation message card */
+.success-card {
+    /* Success color styling */
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    /* Comfortable padding for the message */
+    padding: 2.5% 3%;
+    /* Improve readability for the paragraph */
+    line-height: 1.6;
+}
+
+/* Action buttons row */
+.actions {
+    /* Space above the buttons */
+    margin-top: 2%;
+    /* Buttons on one row when possible */
+    display: flex;
+    gap: 1rem;
+    /* Allow wrapping on smaller screens */
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments for tablets */
+@media(max-width: 900px) {
+    /* Slightly wider layout on tablets */
+    body {
+        max-width: 85%;
+    }
+}
+
+/* Responsive adjustments for phones */
+@media(max-width: 600px) {
+    /* Nearly full width on phones */
+    body {
+        max-width: 95%;
+    }
+
+    /* Smaller title on small screens */
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    /* Stack action buttons vertically */
+    .actions {
+        flex-direction: column;
+    }
+
+    /* Full-width buttons for easy tapping */
+    .actions .btn {
+        width: 100%;
+    }
+}

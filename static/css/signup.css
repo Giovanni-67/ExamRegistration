@@ -1,0 +1,195 @@
+/* Layout baseline for signup page */
+body {
+    /* Overall page width and centering */
+    max-width: 70%;
+    margin: 5% auto 3%;
+    padding: 0 2%;
+    /* Slightly larger base text for readability */
+    font-size: 1.2rem;
+}
+
+/* Signup card sizing and spacing */
+.signup-card {
+    /* Breathing room inside the panel */
+    padding: 4% 5%;
+    /* Space under the card */
+    margin-bottom: 2%;
+}
+
+/* Title styling to match other pages */
+h1 {
+    /* Larger, bold headline */
+    font-size: 2.6rem;
+    font-weight: 700;
+    /* Push form down a bit */
+    margin: 0 0 3%;
+    /* Centered page title */
+    text-align: center;
+    /* Gradient text to match the app style */
+    background: linear-gradient(to right, var(--blue), var(--indigo));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Each label + input row uses a grid so inputs align */
+form label {
+    /* Label column + input column */
+    display: grid;
+    grid-template-columns: 18% 1fr;
+    /* Vertical alignment for label text */
+    align-items: center;
+    /* Space between label and input */
+    column-gap: 4%;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--fg);
+    /* Vertical spacing between rows */
+    margin: 2% auto 1%;
+    /* Keep rows centered inside the card */
+    width: 100%;
+    max-width: 75%;
+}
+
+/* Text inputs: all account fields share the same style */
+input[type="text"],
+input[type="password"],
+input[name="full_name"],
+input[name="email"],
+input[name="password"],
+input[name="confirm"] {
+    /* Input width follows the grid column */
+    width: 100%;
+    /* Larger click area */
+    padding: 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1.15rem;
+    /* Theme-aware colors */
+    background: var(--card-bg);
+    color: var(--fg);
+    /* Subtle depth */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    /*Moves the margins further left so the title and box can be closer together"*/
+    margin-left: -15%;
+}
+
+/* Role selection group container */
+fieldset {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    /* Internal spacing for radio options */
+    padding: 2% 3%;
+    margin-top: 3%;
+    background: var(--card-bg);
+    color: var(--fg);
+    /* Match the width of input rows */
+    width: 100%;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Align fieldset with the input grid width (override) */
+fieldset {
+    /* Narrower role box than the inputs */
+    max-width: 50%;
+}
+
+/* Slightly wider label column on mid-size screens */
+@media(max-width: 900px) {
+    form label {
+        grid-template-columns: 28% 1fr;
+    }
+}
+
+/* Legend label for the role group */
+legend {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--fg);
+}
+
+/* Role options: inline items with spacing */
+.inline-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-right: 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Larger radio buttons for easier tapping */
+.inline-option input[type="radio"] {
+    transform: scale(1.6);
+    transform-origin: left center;
+}
+
+/* Bottom action buttons row */
+.form-actions {
+    /* Push actions down from inputs */
+    margin-top: 4%;
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    /* Center actions under the form */
+    justify-content: center;
+}
+
+/* Button sizing for the actions */
+.form-actions .btn {
+    padding: 1rem 1.6rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media(max-width: 900px) {
+    /* Wider page on tablets */
+    body {
+        max-width: 85%;
+    }
+
+    /* Inputs can take full width on smaller screens */
+    input[type="text"],
+    input[type="password"],
+    input[name="full_name"],
+    input[name="email"],
+    input[name="password"],
+    input[name="confirm"] {
+        max-width: 100%;
+    }
+
+    /* Keep label rows full width */
+    form label {
+        max-width: 100%;
+        column-gap: 1rem;
+    }
+
+    /* Fieldset expands to full width on tablets */
+    fieldset {
+        max-width: 100%;
+    }
+}
+
+/* Phone layout tweaks */
+@media(max-width: 600px) {
+    /* Nearly full width on phones */
+    body {
+        max-width: 95%;
+    }
+
+    /* Smaller title for small screens */
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    /* Stack buttons vertically on phones */
+    .form-actions {
+        flex-direction: column;
+    }
+
+    /* Full-width buttons on phones */
+    .form-actions .btn {
+        width: 100%;
+    }
+}
