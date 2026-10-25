@@ -23,7 +23,7 @@ Set up private configuration (first time only):
 
 4. Paste the generated value after `SECRET_KEY=` in your private `.env` file. Do not share it or commit it. Keep the same key between restarts; replacing it logs out existing sessions.
 
-The app refuses to start if `SECRET_KEY` is missing, blank, or the old `dev-secret` placeholder. `.env`, its local variants, virtual environments, and Python cache files are ignored by Git. Only the blank `.env.example` belongs in the repository.
+The app requires a private, randomly generated `SECRET_KEY` before it can start. `.env`, its local variants, virtual environments, and Python cache files are ignored by Git. Only `.env.example`, with blank secret fields, belongs in the repository. Never include passwords, generated keys, real student information, or screenshots of private settings in commits or public documentation.
 
 For a future hosted deployment, put these settings in the hosting provider's environment settings. Hosting environment values take priority over `.env`. You can still run the application locally with your separate MySQL settings.
 
@@ -42,13 +42,3 @@ python -m unittest discover -s tests -v
 ```
 
 These tests use temporary configuration and generated test keys. They do not read your private `.env` or require a running MySQL database. They cover signing-key validation, session signing, local configuration, hosting overrides, and Git ignore rules.
-
-## Previously published credentials
-
-An earlier revision included a populated `.env`. Removing it from the current branch does not erase it from Git history or make those values private again.
-
-- Change the exposed MySQL password on every database account where it was used, then update your local `.env`. If reused elsewhere, change it there too.
-- Generate a new `SECRET_KEY` using the command above and update every environment using the exposed key. This invalidates existing login sessions.
-- Never paste replacement credentials into GitHub issues, pull requests, or chat.
-
-Credential rotation requires access to the database and configured environments; a repository change cannot perform or verify it. No Git history rewrite is part of this change.
