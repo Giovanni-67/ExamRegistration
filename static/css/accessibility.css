@@ -1,0 +1,39 @@
+/* A visible outline shows where Tab has moved the keyboard focus. */
+:root {
+    --focus-ring: #1d4ed8;
+}
+
+.dark-mode {
+    --focus-ring: #93c5fd;
+}
+
+:is(a, button, input, select, textarea):focus-visible,
+.demo-controls button:focus-visible,
+.demo-entry-actions button:focus-visible,
+.toggle-btn:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 4px;
+}
+
+/* Native buttons support Tab, Enter and Space without custom JavaScript. */
+button.toggle-btn {
+    border: 0;
+    padding: 0;
+    appearance: none;
+    flex-shrink: 0;
+}
+
+/* Respect the system setting without changing the shared theme script. */
+@media (prefers-reduced-motion: reduce) {
+    body,
+    .toggle-circle,
+    .btn,
+    .toolbar-btn {
+        transition: none;
+    }
+
+    .btn:hover,
+    .toolbar-btn:hover {
+        transform: none;
+    }
+}

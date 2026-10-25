@@ -13,6 +13,8 @@
 
   <!-- Load page-specific styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+  <!-- Visible keyboard focus; shared base files stay unchanged. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility.css') }}">
 </head>
 
 <body>
@@ -22,7 +24,7 @@
       <div class="csn-logo">CSN</div>
       <div>Exam Registration System</div>
       <button class="toggle-btn theme-toggle" type="button" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
-          <div class="toggle-circle"></div>
+          <span class="toggle-circle" aria-hidden="true"></span>
       </button>
   </div>
 

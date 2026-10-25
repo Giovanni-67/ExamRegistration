@@ -916,15 +916,47 @@ def faculty_new_session():
     return render_template("faculty_new_session.html", exams=exams, locations=locations)
 
 # -----------------------
-# Minimal error handlers
+# Recoverable errors: explain the next step without exposing server details.
 # -----------------------
+def render_error(status, title, message):
+    return render_template("error.html", status=status, title=title, message=message), status
+
+
+@app.errorhandler(400)
+def _400(_):
+    return render_error(400, "Check the request",
+                        "Some details were not valid. Go back to review them, or return to the home page.")
+
+
 @app.errorhandler(403)
 def _403(_):
-    return "Forbidden", 403
+    return render_error(403, "This action is not available",
+                        "Your current session cannot use this action. Return home to sign in or start a new demo.")
+
 
 @app.errorhandler(404)
 def _404(_):
-    return "Not Found", 404
+    return render_error(404, "Page not found",
+                        "This address does not match a page in Exam Registration. Return home to continue.")
+
+
+@app.errorhandler(413)
+def _413(_):
+    return render_error(413, "This form is too large", "Go back and use shorter entries, then submit the form again.")
+
+
+@app.errorhandler(psycopg.Error)
+def database_unavailable(error):
+    # The exception's text can contain private connection or query details.
+    app.logger.warning("Database request failed (%s)", type(error).__name__)
+    return render_error(503, "Temporarily unavailable",
+                        "The database could not complete this request. Try again shortly. If you submitted a booking, "
+                        "check your appointment history before submitting it again.")
+
+
+@app.errorhandler(500)
+def _500(_):
+    return render_error(500, "We could not finish that request", "Return home and check your appointments before trying the action again.")
 
 # -----------------------
 # Run
