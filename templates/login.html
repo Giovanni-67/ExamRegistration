@@ -8,32 +8,34 @@
   <!-- Load base.js: restores saved theme, provides toggleDarkMode() -->
   <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 
+  <!-- Shared theme colors and controls used throughout the application. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+
   <!-- Load page-specific styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
 </head>
 
 <body>
 
-  <!-- CSN Header with logo, title, and dark mode toggle -->
+  <!-- CSN name and theme switch stay visible without crowding the form. -->
   <div class="csn-header">
-      <!-- Logo badge: CSN initials on gold background -->
       <div class="csn-logo">CSN</div>
       <div>Exam Registration System</div>
-      <!-- Toggle switch: calls toggleDarkMode() from base.js -->
-      <div class="toggle-btn" onclick="toggleDarkMode()">
+      <button class="toggle-btn theme-toggle" type="button" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
           <div class="toggle-circle"></div>
-      </div>
+      </button>
   </div>
 
-  <!-- Login card: centered form container -->
+  <!-- The sign-in card keeps labels, fields, and the main action in one column. -->
   <div class="login-card">
 
-    <h1>Login</h1>
+    <h1>Sign in</h1>
+    <p class="intro">Use your CSN account to manage exam appointments.</p>
 
     <!-- Flash messages from Flask: displays list of (category, message) tuples -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <ul>
+        <ul class="messages" role="status">
           {% for c,m in messages %}
             <!-- c: string (category like 'success', 'error'), m: string (message text) -->
             <li><strong>{{ c|capitalize }}:</strong> {{ m }}</li>
@@ -43,27 +45,28 @@
     {% endwith %}
 
     <!-- Login form: submits POST to login route, returns email and password -->
-    <form method="post" action="{{ url_for('login') }}">
-      <label>Email</label>
-      <!-- Email input: validates student (10digits@student.csn.edu) or faculty (firstname.lastname@csn.edu) format -->
+    <form class="login-form" method="post" action="{{ url_for('login') }}">
+      <label for="email">CSN email</label>
+      <!-- Students use their 10-digit CSN address; faculty use first.last. -->
       <input
-        type="text"
+        id="email"
+        type="email"
         name="email"
+        autocomplete="username"
         required
         pattern="^\d{10}@student\.csn\.edu$|^[A-Za-z]+\.[A-Za-z]+@csn\.edu$"
         title="Student: 10digits@student.csn.edu  |  Faculty: firstname.lastname@csn.edu"
-      /><br />
+      />
 
-      <label>Password</label>
-      <!-- Password input: returns plain text password -->
-      <input type="password" name="password" required /><br />
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" autocomplete="current-password" required />
 
       <!-- Submit button: sends form data to login route -->
-      <button type="submit">Login</button>
+      <button type="submit">Sign in</button>
     </form>
 
     <!-- Link to signup route -->
-    <p><a href="{{ url_for('signup') }}">Create an account</a></p>
+    <p class="signup-prompt">New here? <a href="{{ url_for('signup') }}">Create an account</a></p>
 
   </div>
 
