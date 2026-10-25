@@ -1,249 +1,189 @@
-/* Apply border-box to all elements: padding and border included in width/height */
-* {
-    box-sizing: border-box;
-}
-
-/* CSS Variables - Light Mode */
-:root {
-    --csn-blue: #00345f;        /* Brand blue for headers/accents */
-    --csn-gold: #ffb81c;        /* Brand gold for logo */
-    --bg: #f5f7fa;              /* Page background color */
-    --fg: #111827;              /* Primary text color */
-    --card-bg: #ffffff;         /* Background for cards/panels */
-    --border: #e5e7eb;          /* Border color for inputs/dividers */
-    --subtext: #6b7280;         /* Muted/secondary text color */
-    --bd: #e5e7eb;              /* Alternative border variable */
-    --muted: #6b7280;           /* Duplicate of subtext */
-    --blue: #2563eb;            /* Blue for gradients */
-    --indigo: #4f46e5;          /* Indigo for gradients */
-}
-
-/* CSS Variables - Dark Mode: applied when .dark-mode class exists on <html> */
-.dark-mode {
-    --bg: #0f172a;              /* Dark page background */
-    --fg: #f3f4f6;              /* Light text color */
-    --card-bg: #1e293b;         /* Dark card background */
-    --border: #334155;          /* Dark border color */
-    --subtext: #cbd5e1;         /* Light muted text */
-    --bd: #334155;              /* Dark border alternative */
-}
-
-/* Body: centers content, applies responsive width */
+/* A simple, responsive form for creating an exam session. */
 body {
-    font-family: 'Inter', system-ui, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 0 5% 5%;
+    background:
+        radial-gradient(ellipse at 92% 8%, rgba(37, 99, 235, 0.07), transparent 34%),
+        var(--bg);
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 0;
+}
+
+.csn-logo {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 9px;
+    background: var(--csn-gold);
+    color: var(--csn-blue);
+    font-weight: 800;
+}
+
+.brand-name {
+    color: var(--fg);
+    font-weight: 650;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.header-actions .toggle-btn {
+    padding: 0;
+    border: 0;
+    appearance: none;
+}
+
+/* The form is centered but does not stretch too wide on desktop. */
+.panel {
+    width: min(100%, 800px);
+    margin: clamp(18px, 5vh, 52px) auto;
+    padding: clamp(22px, 4vw, 42px);
+    border-radius: 16px;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.07);
+}
+
+.panel h1 {
+    width: 100%;
+    margin: 0 0 10px;
+    background: none;
+    color: var(--fg);
+    font-size: clamp(1.7rem, 3vw, 2.15rem);
+    line-height: 1.2;
+    -webkit-text-fill-color: currentColor;
+    text-align: left;
+}
+
+.page-intro {
+    margin: 0 0 24px;
+    color: var(--subtext);
+    line-height: 1.55;
+}
+
+.messages {
+    width: 100%;
+}
+
+/* Field rows share one grid, so labels and controls line up consistently. */
+.session-form {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+}
+
+.session-form > label,
+.session-form > .row,
+.session-form > .form-actions {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.session-form > label,
+.session-form .row label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--fg);
+    font-size: 0.95rem;
+    font-weight: 650;
+}
+
+/* Exam and location use the full row; date, time, capacity, duration pair up. */
+.session-form > label,
+.session-form > .row,
+.session-form > .form-actions {
+    grid-column: 1 / -1;
+}
+
+.session-form .row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+}
+
+.session-form input,
+.session-form select {
+    width: 100%;
+    max-width: none;
+    min-height: 48px;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
     background: var(--bg);
-    max-width: 60%;             /* Width: 60% of viewport */
-    margin: 3% auto;            /* Top margin: 3%, horizontally centered */
-    padding: 0 2%;              /* Side padding: 2% */
     color: var(--fg);
+    font: inherit;
 }
 
-/* Container for dark mode toggle: aligns toggle to right */
-.toggle-container {
+.session-form input:focus-visible,
+.session-form select:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.28);
+    border-color: var(--blue);
+}
+
+/* Native date/time icons need the dark browser palette too. */
+.dark-mode .session-form input,
+.dark-mode .session-form select {
+    color-scheme: dark;
+}
+
+.form-actions {
     display: flex;
-    justify-content: flex-end;  /* Aligns content to right */
-    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 4px;
 }
 
-/* Dark mode toggle button: pill-shaped background */
-.toggle-btn {
-    width: 56px;
-    height: 28px;
-    background: #d1d5db;
-    border-radius: 999px;       /* Creates pill shape */
-    position: relative;
-    cursor: pointer;
+.form-actions .btn,
+.form-actions button[type="submit"] {
+    min-height: 46px;
+    margin: 0;
+    padding: 10px 18px;
+    font: inherit;
+    font-weight: 650;
 }
 
-/* Toggle circle: slides left/right inside toggle button */
-.toggle-circle {
-    width: 22px;
-    height: 22px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 3px;
-    left: 4px;
-    transition: all 0.25s ease; /* Smooth sliding animation */
+.form-actions button[type="submit"] {
+    border-color: var(--csn-blue);
+    background: var(--csn-blue);
+    color: #fff;
 }
 
-/* Move toggle circle right when dark mode active */
-.dark-mode .toggle-circle {
-    transform: translateX(28px); /* Moves 28px to the right */
+.form-actions button[type="submit"]:hover {
+    background: #064b83;
 }
 
-/* Page title: gradient text effect from blue to indigo */
-h1 {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin: 0 0 2rem;           /* Bottom margin: 2rem (spacing below title) */
-    text-align: center;
-    background: linear-gradient(to right, var(--blue), var(--indigo));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent; /* Makes gradient visible as text color */
-    width: 100%;
-}
+@media (max-width: 600px) {
+    body {
+        padding-inline: 4%;
+    }
 
-/* Main panel: contains form, centered vertically and horizontally */
-.panel, .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 4% 5%;             /* Padding: 4% top/bottom, 5% left/right */
-    margin-bottom: 1.5%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    font-size: 1rem;
-    min-height: 65vh;           /* Minimum height: 65% of viewport */
-    display: flex;
-    flex-direction: column;
-    align-items: center;        /* Centers children horizontally */
-}
+    .page-header {
+        gap: 10px;
+    }
 
-/* Buttons: standard styling for .btn class and submit buttons */
-.btn, button[type="submit"] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.8rem 1.2rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--card-bg);
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
-    cursor: pointer;
-    transition: 0.15s ease;     /* Smooth hover transition */
-    margin-right: 0.6rem;
-    color: var(--fg);
-}
+    .brand-name {
+        font-size: 0.9rem;
+    }
 
-/* Button hover: lifts up 1px and increases shadow */
-.btn:hover, button[type="submit"]:hover {
-    background: #f3f4f6;
-    transform: translateY(-1px); /* Moves up 1px */
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-}
+    .header-actions {
+        gap: 8px;
+    }
 
-/* Danger button: red theme for destructive actions */
-.btn-danger {
-    background: #fef2f2;        /* Light red background */
-    border-color: #fca5a5;      /* Pink border */
-    color: #991b1b;             /* Dark red text */
-}
-
-.btn-danger:hover {
-    background: #fee2e2;
-    border-color: #f87171;
-    color: #7f1d1d;
-}
-
-/* Row: flexbox container for side-by-side inputs */
-.row {
-    display: flex;
-    gap: 2rem;                  /* Space between items: 2rem */
-    flex-wrap: wrap;            /* Wraps to new line on small screens */
-    align-items: center;
-    margin-top: 3rem;           /* ADJUST THIS: spacing above each row */
-}
-
-/* Labels inside rows: remove top margin to prevent double spacing */
-.row label {
-    margin-top: 0;
-}
-
-/* Inputs and selects: text fields, dropdowns, date/time pickers */
-input, select {
-    padding: 0.85rem;
-    width: 100%;
-    max-width: 450px;           /* Maximum width: 450px */
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 1rem;
-    background: var(--card-bg);
-    color: var(--fg);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    margin-top: 0.4rem;         /* Small space below label */
-    display: block;
-}
-
-/* Labels: text above form inputs */
-label {
-    display: block;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--fg);
-    margin: 3rem 0 0.5rem;      /* ADJUST FIRST VALUE (3rem): spacing between form fields */
-}
-
-/* Flash messages: success/error notifications from Flask */
-ul.messages {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--blue); /* Blue accent bar on left */
-    border-radius: 10px;
-    padding: 0.8rem 1.2rem;
-    margin: 0 0 1.2rem;
-    list-style: none;           /* Removes bullet points */
-    font-size: 0.95rem;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-    color: var(--fg);
-}
-
-ul.messages li {
-    margin: .35rem 0;
-}
-
-/* Form: centers all children, distributes vertically */
-form {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;        /* Centers children horizontally */
-    flex: 1;                    /* Takes remaining space in panel */
-    justify-content: center;    /* Centers children vertically in available space */
-}
-
-/* Direct children of form: constrain width for consistent alignment */
-form > label,
-form > .row,
-form > div {
-    width: 100%;
-    max-width: 450px;           /* Maximum width: 500px */
-}
-
-/* First label: remove top margin to prevent extra space at top */
-label:first-of-type {
-    margin-top: 0;
-}
-
-/* Individual adjustments for each element */
-form > label:nth-of-type(1) {
-    margin-left: 1rem;
-}
-
-form > label:nth-of-type(2) {
-    margin-left: 1rem;
-}
-
-form > .row:nth-of-type(1) {
-    margin-left: 5rem;
-}
-
-form > .row:nth-of-type(2) {
-    margin-left: 13rem;
-}
-
-form > div:last-child {
-    margin-left: 15rem;
-}
-
-/* Mobile responsive: stack row items vertically on small screens */
-@media(max-width: 760px) {
-    .row {
-        flex-direction: column; /* Stacks items vertically */
-        align-items: flex-start;
-        gap: 6px;
+    .session-form,
+    .session-form .row {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

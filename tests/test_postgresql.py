@@ -205,6 +205,22 @@ class PostgreSQLTests(PostgreSQLFixture, unittest.TestCase):
         rows = self.module["fetch_sessions_between"](datetime.now(), datetime.now() + timedelta(days=3))
         self.assertEqual(rows[0]["booked"], 0)
 
+    def test_invalid_faculty_form_keeps_selected_fields(self):
+        self.sign_in(self.faculty, "faculty")
+        response = self.client.post("/faculty/sessions/new", data={
+            "exam_id": str(self.exam), "location_id": str(self.location),
+            "date": "2099-01-01", "time": "14:30", "capacity": "0",
+            "duration_minutes": "120",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(f'value="{self.exam}" selected'.encode(), response.data)
+        self.assertIn(f'value="{self.location}" selected'.encode(), response.data)
+        self.assertIn(b'value="2099-01-01"', response.data)
+        self.assertIn(b'value="14:30"', response.data)
+        self.assertIn(b'value="120"', response.data)
+        with self.connect() as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) AS count FROM examsessions").fetchone()["count"], 0)
+
     def test_empty_database_pages(self):
         self.sign_in()
         for path in ("/student", "/student/history", "/student/cancel-appointments", "/student/make-appointment"):
