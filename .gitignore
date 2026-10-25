@@ -1,1 +1,10 @@
-/venv
+# Private settings belong on your computer or hosting service, never in Git.
+.env
+.env.*
+!.env.example
+
+# Each developer installs their own Python environment and generated files.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
