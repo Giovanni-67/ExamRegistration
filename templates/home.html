@@ -19,14 +19,16 @@
   <!-- Load page-specific styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}" />
+  <!-- Visible keyboard focus; shared base files stay unchanged. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility.css') }}">
 </head>
 <body>
 
   <!-- Dark mode toggle switch, positioned top-right -->
   <div class="toggle-container">
-    <div class="toggle-btn" onclick="toggleDarkMode()">
-      <div class="toggle-circle"></div>
-    </div>
+    <button class="toggle-btn" type="button" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
+      <span class="toggle-circle" aria-hidden="true"></span>
+    </button>
   </div>
 
   <!-- Page title: centered, outside panel -->

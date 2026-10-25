@@ -20,15 +20,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/student_dashboard.css') }}" />
   <!-- Shared demo controls; regular account pages keep their usual layout. -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}" />
+  <!-- Visible keyboard focus; shared base files stay unchanged. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility.css') }}">
 </head>
 <body>
   {% include "demo_banner.html" %}
 
   <!-- Dark mode toggle switch, positioned top-right -->
   <div class="toggle-container">
-    <div class="toggle-btn" onclick="toggleDarkMode()">
-      <div class="toggle-circle"></div>
-    </div>
+    <button class="toggle-btn" type="button" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
+      <span class="toggle-circle" aria-hidden="true"></span>
+    </button>
   </div>
 
   <!-- Top navigation bar with title and action buttons -->

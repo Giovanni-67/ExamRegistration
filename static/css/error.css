@@ -1,0 +1,38 @@
+/* Keep recovery instructions readable on both phones and wide monitors. */
+.error-page {
+    width: min(92%, 640px);
+    margin: clamp(24px, 8vh, 80px) auto;
+}
+
+.error-card {
+    padding: clamp(24px, 5vw, 40px);
+}
+
+.error-code {
+    color: var(--subtext);
+    font-size: 0.9rem;
+}
+
+.error-card h1 {
+    margin: 16px 0;
+    font-size: clamp(1.7rem, 4vw, 2.2rem);
+    line-height: 1.2;
+}
+
+.error-card p {
+    line-height: 1.65;
+}
+
+.error-card .btn {
+    min-height: 46px;
+    margin-top: 16px;
+    padding: 10px 18px;
+    background: var(--csn-blue);
+    color: #fff;
+    font-size: 1rem;
+}
+
+.error-card .btn:hover {
+    background: #064b83;
+    transform: none;
+}
