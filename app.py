@@ -24,7 +24,13 @@ load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 # Flask / Bcrypt setup
 # -----------------------
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "dev-secret")
+app.secret_key = os.getenv("SECRET_KEY")
+# This key signs login sessions; a public or missing key cannot protect them.
+if not app.secret_key or not app.secret_key.strip() or app.secret_key.strip() == "dev-secret":
+    raise RuntimeError(
+        "Set SECRET_KEY to a private, randomly generated value in your .env "
+        "file or hosting environment before starting the app."
+    )
 bcrypt = Bcrypt(app)
 
 # -----------------------
