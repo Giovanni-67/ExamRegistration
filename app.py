@@ -3,7 +3,9 @@ from flask import (
     url_for, flash, session, abort
 )
 from flask_bcrypt import Bcrypt
-import mysql.connector
+import click
+import psycopg
+from psycopg.rows import dict_row
 import os, re, calendar as pycal
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -13,7 +15,6 @@ from functools import wraps
 from datetime import datetime, date, time, timedelta
 import calendar as cal
 from flask import render_template, request, session, redirect, url_for, flash
-import mysql.connector
 
 # -----------------------
 # Load .env next to this file
@@ -32,18 +33,25 @@ if not app.secret_key or not app.secret_key.strip() or app.secret_key.strip() ==
         "file or hosting environment before starting the app."
     )
 bcrypt = Bcrypt(app)
+app.config["DATABASE_URL"] = os.getenv("DATABASE_URL", "")
 
 # -----------------------
 # DB connection helper
 # -----------------------
 def get_conn():
-    return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASS", ""),
-        database=os.getenv("DB_NAME", "exam_reg_db"),
-        auth_plugin="mysql_native_password",
-    )
+    database_url = app.config["DATABASE_URL"]
+    if not database_url.strip():
+        raise RuntimeError("Set DATABASE_URL in your private .env or hosting environment.")
+    # Named columns keep the templates readable; provider TLS options stay in the URL.
+    return psycopg.connect(database_url, row_factory=dict_row, connect_timeout=10)
+
+
+@app.cli.command("init-db")
+def init_db():
+    """Create missing PostgreSQL tables without deleting existing records."""
+    with get_conn() as conn:
+        conn.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
+    click.echo("Database tables are ready.")
 
 # -----------------------
 # Email rules
@@ -103,7 +111,7 @@ def fetch_sessions_between(start_dt: datetime, end_dt: datetime, user_id: int | 
     If user_id is provided, also flag whether this user is already registered.
     """
     conn = get_conn()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
 
     base_select = """
         SELECT
@@ -116,11 +124,11 @@ def fetch_sessions_between(start_dt: datetime, end_dt: datetime, user_id: int | 
         FROM examsessions es
         JOIN exams e      ON e.id = es.exam_id
         JOIN locations l  ON l.id = es.location_id
-        LEFT JOIN registrations r ON r.session_id = es.id AND r.cancelled = 0
+        LEFT JOIN registrations r ON r.session_id = es.id AND r.cancelled = FALSE
         WHERE es.session_datetime BETWEEN %s AND %s
     """
 
-    group_order = " GROUP BY es.id ORDER BY es.session_datetime ASC"
+    group_order = " GROUP BY es.id, e.id, l.id ORDER BY es.session_datetime ASC"
 
     if user_id:
         # We won't return already_registered here because the student dashboard no longer shows buttons.
@@ -136,7 +144,7 @@ def fetch_sessions_between(start_dt: datetime, end_dt: datetime, user_id: int | 
 
 def fetch_upcoming_for_student(user_id: int, limit: int = 10):
     conn = get_conn()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
     cur.execute(
         """
         SELECT
@@ -147,14 +155,14 @@ def fetch_upcoming_for_student(user_id: int, limit: int = 10):
             es.capacity,
             (
               SELECT COUNT(*) FROM registrations r2
-              WHERE r2.session_id = es.id AND r2.cancelled = 0
+              WHERE r2.session_id = es.id AND r2.cancelled = FALSE
             ) AS booked
         FROM registrations r
         JOIN examsessions es ON es.id = r.session_id
         JOIN exams e          ON e.id = es.exam_id
         JOIN locations l      ON l.id = es.location_id
         WHERE r.user_id = %s
-          AND r.cancelled = 0
+          AND r.cancelled = FALSE
           AND es.session_datetime >= NOW()
         ORDER BY es.session_datetime ASC
         LIMIT %s
@@ -210,8 +218,8 @@ def signup():
 
         pw_hash = bcrypt.generate_password_hash(password).decode("utf-8")
 
-        # Derive nshe for students, else store empty string for faculty
-        nshe = STUDENT_RE.match(email).group(1) if detected == "student" else ""
+        # Faculty have no student ID. NULL allows multiple faculty accounts.
+        nshe = STUDENT_RE.match(email).group(1) if detected == "student" else None
 
         try:
             conn = get_conn()
@@ -224,7 +232,7 @@ def signup():
             cur.close(); conn.close()
             flash("Account created! Please log in.", "success")
             return redirect(url_for("login"))
-        except mysql.connector.errors.IntegrityError:
+        except psycopg.IntegrityError:
             try: cur.close(); conn.close()
             except: pass
             flash("That email is already registered.", "error")
@@ -242,7 +250,7 @@ def login():
     password = request.form.get("password", "")
 
     conn = get_conn()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
     cur.execute("SELECT id, full_name, password_hash, role FROM users WHERE email=%s", (email,))
     user = cur.fetchone()
     cur.close(); conn.close()
@@ -297,7 +305,7 @@ def student_dashboard():
         return redirect(url_for("login"))
 
     conn = get_conn()
-    cur  = conn.cursor(dictionary=True)
+    cur  = conn.cursor()
 
     # Pull ONLY sessions the student has registered for (and not cancelled),
     # and hide anything before today. Still constrain to the viewed month.
@@ -321,11 +329,11 @@ def student_dashboard():
         LEFT JOIN (
             SELECT session_id, COUNT(*) AS booked
             FROM registrations
-            WHERE cancelled = 0
+            WHERE cancelled = FALSE
             GROUP BY session_id
         ) b ON b.session_id = s.id
         WHERE r.user_id = %s
-          AND r.cancelled = 0
+          AND r.cancelled = FALSE
           AND s.session_datetime >= %s
           AND s.session_datetime >= %s
           AND s.session_datetime <= %s
@@ -356,11 +364,11 @@ def student_dashboard():
         LEFT JOIN (
             SELECT session_id, COUNT(*) AS booked
             FROM registrations
-            WHERE cancelled = 0
+            WHERE cancelled = FALSE
             GROUP BY session_id
         ) b ON b.session_id = s.id
         WHERE r.user_id = %s
-          AND r.cancelled = 0
+          AND r.cancelled = FALSE
           AND s.session_datetime >= %s
         ORDER BY s.session_datetime
         LIMIT 10
@@ -397,185 +405,113 @@ def student_dashboard():
 # STUDENT: Make Appointment (list sessions not already enrolled)
 # -----------------------
 @app.route("/student/make-appointment", methods=["GET", "POST"])
+@login_required
 @student_required
 def student_make_appointment():
-    """
-    GET  -> show a dropdown of sessions the student is NOT already actively registered for
-    POST -> register for the chosen session using 'revive-then-insert' logic to avoid duplicate-key errors
-    """
+    """List future sessions and book or restore an appointment in one transaction."""
     user_id = session["user_id"]
-    conn = get_conn()
-    cur  = conn.cursor(dictionary=True)
-
     if request.method == "GET":
-        # Sessions the student is NOT actively registered for (cancelled=0)
-        cur.execute(
-            """
-            SELECT es.id,
-                   e.exam_code,
-                   e.description,
-                   es.session_datetime,
-                   es.duration_minutes,
-                   l.campus_name, l.building_name, l.room_number,
-                   (SELECT COUNT(*) FROM registrations r
-                      WHERE r.session_id = es.id AND r.cancelled = 0) AS booked,
-                   es.capacity
-            FROM examsessions es
-            JOIN exams e      ON e.id = es.exam_id
-            JOIN locations l  ON l.id = es.location_id
-            WHERE es.id NOT IN (
-                SELECT r.session_id
-                FROM registrations r
-                WHERE r.user_id = %s AND r.cancelled = 0
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT es.id, e.exam_code, e.description,
+                       es.session_datetime, es.duration_minutes,
+                       l.campus_name, l.building_name, l.room_number,
+                       (SELECT COUNT(*) FROM registrations r
+                        WHERE r.session_id = es.id AND NOT r.cancelled) AS booked,
+                       es.capacity
+                FROM examsessions es
+                JOIN exams e ON e.id = es.exam_id
+                JOIN locations l ON l.id = es.location_id
+                WHERE es.session_datetime >= LOCALTIMESTAMP
+                  AND NOT EXISTS (
+                      SELECT 1 FROM registrations r
+                      WHERE r.session_id = es.id AND r.user_id = %s AND NOT r.cancelled
+                  )
+                ORDER BY es.session_datetime ASC
+                """,
+                (user_id,),
             )
-            ORDER BY es.session_datetime ASC
-            """,
-            (user_id,),
-        )
-        sessions = cur.fetchall()
-        cur.close(); conn.close()
+            sessions = cur.fetchall()
+        for exam_session in sessions:
+            exam_session["is_full"] = exam_session["booked"] >= exam_session["capacity"]
         return render_template("student_make_appointment.html", sessions=sessions)
 
-    # ---------- POST: make appointment ----------
-
-    # ENFORCE MAX 3 ACTIVE FUTURE REGISTRATIONS
-    cur.execute(
-        """
-        SELECT COUNT(*) AS active_count
-        FROM registrations r
-        JOIN examsessions es ON es.id = r.session_id
-        WHERE r.user_id = %s
-          AND r.cancelled = 0
-          AND es.session_datetime >= NOW()
-        """,
-        (user_id,),
-    )
-    row = cur.fetchone()
-    if row and row["active_count"] >= 3:
-        cur.close(); conn.close()
-        flash("You already have 3 active exam appointments. Cancel one before booking another.", "error")
-        return redirect(url_for("student_dashboard"))
-
     session_id = request.form.get("session_id", "").strip()
-    if not session_id.isdigit():
-        cur.close(); conn.close()
+    if not session_id.isascii() or not session_id.isdigit() or len(session_id) > 10:
+        flash("Please choose a valid session.", "error")
+        return redirect(url_for("student_make_appointment"))
+    session_id = int(session_id)
+    if not 0 < session_id <= 2147483647:
         flash("Please choose a valid session.", "error")
         return redirect(url_for("student_make_appointment"))
 
-    session_id = int(session_id)
+    try:
+        with get_conn() as conn, conn.cursor() as cur:
+            # Serialize bookings by this student so simultaneous clicks cannot exceed 3.
+            cur.execute("SELECT id FROM users WHERE id = %s FOR UPDATE", (user_id,))
+            if not cur.fetchone():
+                session.clear()
+                return redirect(url_for("login"))
 
-    # Verify session exists + basic capacity snapshot
-    cur.execute(
-        """
-        SELECT es.id, es.capacity,
-               (SELECT COUNT(*) FROM registrations r
-                  WHERE r.session_id = es.id AND r.cancelled = 0) AS booked
-        FROM examsessions es
-        WHERE es.id = %s
-        """,
-        (session_id,),
-    )
-    sess = cur.fetchone()
-    if not sess:
-        cur.close(); conn.close()
-        flash("That exam session no longer exists.", "error")
-        return redirect(url_for("student_make_appointment"))
-
-    # If already actively registered, short-circuit
-    cur.execute(
-        "SELECT id FROM registrations WHERE user_id=%s AND session_id=%s AND cancelled=0",
-        (user_id, session_id),
-    )
-    if cur.fetchone():
-        cur.close(); conn.close()
-        flash("You are already registered for that session.", "info")
-        return redirect(url_for("student_dashboard"))
-
-    # Try to revive a previously cancelled registration for this session
-    cur.execute(
-        """
-        UPDATE registrations
-        SET cancelled = 0,
-            cancelled_at = NULL,
-            registered_at = NOW()
-        WHERE user_id = %s AND session_id = %s AND cancelled = 1
-        """,
-        (user_id, session_id),
-    )
-    revived = cur.rowcount
-
-    if not revived:
-        # Capacity re-check under lock to avoid races
-        cur.execute(
-            """
-            SELECT es.capacity,
-                   (SELECT COUNT(*) FROM registrations r
-                      WHERE r.session_id = es.id AND r.cancelled = 0) AS booked
-            FROM examsessions es
-            WHERE es.id = %s
-            FOR UPDATE
-            """,
-            (session_id,),
-        )
-        caprow = cur.fetchone()
-        if caprow and caprow["booked"] >= caprow["capacity"]:
-            cur.close(); conn.close()
-            flash("Sorry, that session just filled up.", "error")
-            return redirect(url_for("student_make_appointment"))
-
-        # Fresh insert (if someone revived/inserted just now, swallow duplicate)
-        try:
+            # Both new and restored bookings lock the session before counting seats.
             cur.execute(
-                "INSERT INTO registrations (session_id, user_id) VALUES (%s, %s)",
+                "SELECT id, capacity, session_datetime FROM examsessions WHERE id = %s FOR UPDATE",
+                (session_id,),
+            )
+            exam_session = cur.fetchone()
+            if not exam_session:
+                flash("That exam session no longer exists.", "error")
+                return redirect(url_for("student_make_appointment"))
+            cur.execute("SELECT LOCALTIMESTAMP AS now")
+            if exam_session["session_datetime"] < cur.fetchone()["now"]:
+                flash("That exam session has already started.", "error")
+                return redirect(url_for("student_make_appointment"))
+
+            cur.execute(
+                "SELECT id, cancelled FROM registrations WHERE user_id = %s AND session_id = %s",
+                (user_id, session_id),
+            )
+            existing = cur.fetchone()
+            if existing and not existing["cancelled"]:
+                flash("You are already registered for that session.", "info")
+                return redirect(url_for("student_dashboard"))
+
+            cur.execute(
+                """
+                SELECT COUNT(*) AS active_count
+                FROM registrations r JOIN examsessions es ON es.id = r.session_id
+                WHERE r.user_id = %s AND NOT r.cancelled AND es.session_datetime >= LOCALTIMESTAMP
+                """,
+                (user_id,),
+            )
+            if cur.fetchone()["active_count"] >= 3:
+                flash("You already have 3 active exam appointments. Cancel one before booking another.", "error")
+                return redirect(url_for("student_dashboard"))
+
+            # A separate query sees bookings committed while we waited for the lock.
+            cur.execute(
+                "SELECT COUNT(*) AS booked FROM registrations WHERE session_id = %s AND NOT cancelled",
+                (session_id,),
+            )
+            if cur.fetchone()["booked"] >= exam_session["capacity"]:
+                flash("Sorry, that session just filled up.", "error")
+                return redirect(url_for("student_make_appointment"))
+
+            cur.execute(
+                """
+                INSERT INTO registrations (session_id, user_id) VALUES (%s, %s)
+                ON CONFLICT (user_id, session_id) DO UPDATE
+                SET cancelled = FALSE, cancelled_at = NULL, registered_at = LOCALTIMESTAMP
+                """,
                 (session_id, user_id),
             )
-        except mysql.connector.errors.IntegrityError:
-            pass
-
-    conn.commit()
-    cur.close(); conn.close()
-
-    # If you have a confirmation page route, send them there:
-    try:
-        return redirect(url_for("student_confirmation"))
-    except Exception:
-        flash("Appointment booked successfully!", "success")
-        return redirect(url_for("student_dashboard"))
-
-    # GET: show only future sessions NOT enrolled by this user yet
-    conn = get_conn()
-    cur = conn.cursor(dictionary=True)
-    cur.execute(
-        """
-        SELECT
-            es.id,
-            e.exam_code,
-            es.session_datetime,
-            l.campus_name, l.building_name, l.room_number,
-            es.capacity,
-            COUNT(r.id) AS booked
-        FROM examsessions es
-        JOIN exams e       ON e.id = es.exam_id
-        JOIN locations l   ON l.id = es.location_id
-        LEFT JOIN registrations r ON r.session_id = es.id AND r.cancelled = 0
-        WHERE es.session_datetime >= NOW()
-          AND NOT EXISTS (
-                SELECT 1
-                FROM registrations r2
-                WHERE r2.session_id = es.id
-                  AND r2.user_id = %s
-                  AND r2.cancelled = 0
-          )
-        GROUP BY es.id
-        ORDER BY es.session_datetime ASC
-        """,
-        (user_id,),
-    )
-    sessions = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return render_template("student_make_appointment.html", sessions=sessions)
+    except psycopg.Error:
+        # The connection block rolls back before returning to the form.
+        flash("Could not book the appointment. Please try again.", "error")
+        return redirect(url_for("student_make_appointment"))
+    # The connection block commits before we show a successful confirmation.
+    return redirect(url_for("student_confirmation"))
 
 # Confirmation page after successful registration
 @app.route("/student/confirmation")
@@ -593,7 +529,7 @@ def student_confirmation():
 def student_cancel_page():
     user_id = session["user_id"]
     conn = get_conn()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
     cur.execute(
         """
         SELECT
@@ -607,7 +543,7 @@ def student_cancel_page():
         JOIN exams e          ON e.id = es.exam_id
         JOIN locations l      ON l.id = es.location_id
         WHERE r.user_id = %s
-          AND r.cancelled = 0
+          AND r.cancelled = FALSE
           AND es.session_datetime >= NOW()
         ORDER BY es.session_datetime ASC
         """,
@@ -628,8 +564,8 @@ def student_cancel(registration_id: int):
         cur.execute(
             """
             UPDATE registrations
-            SET cancelled = 1, cancelled_at = NOW()
-            WHERE id = %s AND user_id = %s AND cancelled = 0
+            SET cancelled = TRUE, cancelled_at = NOW()
+            WHERE id = %s AND user_id = %s AND cancelled = FALSE
             """,
             (registration_id, user_id),
         )
@@ -638,9 +574,9 @@ def student_cancel(registration_id: int):
             flash("Nothing to cancel (already canceled or not found).", "info")
         else:
             flash("Appointment canceled.", "success")
-    except mysql.connector.Error as e:
+    except psycopg.Error:
         conn.rollback()
-        flash(f"Could not cancel: {e.msg}", "error")
+        flash("Could not cancel the appointment. Please try again.", "error")
     finally:
         cur.close(); conn.close()
 
@@ -655,7 +591,7 @@ def student_cancel(registration_id: int):
 def student_history():
     user_id = session["user_id"]
     conn = get_conn()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
     cur.execute(
         """
         SELECT
@@ -762,15 +698,15 @@ def faculty_new_session():
             conn.commit()
             flash("Exam session created.", "success")
             return redirect(url_for("faculty_dashboard"))
-        except mysql.connector.Error as e:
+        except psycopg.Error:
             conn.rollback()
-            flash(f"Could not create session: {e.msg}", "error")
+            flash("Could not create the session. Check the details and try again.", "error")
         finally:
             cur.close(); conn.close()
 
     # GET: load exams & locations for form
     conn = get_conn()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
     cur.execute("SELECT id, exam_code FROM exams ORDER BY exam_code ASC")
     exams = cur.fetchall()
     cur.execute(

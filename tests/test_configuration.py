@@ -43,7 +43,7 @@ class SecretKeyTests(unittest.TestCase):
             second.session_interface.get_signing_serializer(second).loads(cookie)
 
     def test_public_pages_work_without_opening_database_connections(self):
-        with patch("mysql.connector.connect", side_effect=AssertionError("Unexpected DB access")):
+        with patch("psycopg.connect", side_effect=AssertionError("Unexpected DB access")):
             app = load_app({"SECRET_KEY": secrets.token_hex(32)})["app"]
             with app.test_client() as client:
                 for path in ("/", "/login", "/signup"):
@@ -77,6 +77,22 @@ class SecretKeyTests(unittest.TestCase):
             ):
                 app = runpy.run_path(str(ROOT / "app.py"))["app"]
                 self.assertEqual(app.secret_key, hosted_key)
+
+
+class DatabaseConfigurationTests(unittest.TestCase):
+    def test_missing_database_url_has_a_safe_setup_error(self):
+        module = load_app({"SECRET_KEY": secrets.token_hex(32)})
+        with self.assertRaisesRegex(RuntimeError, "Set DATABASE_URL"):
+            module["get_conn"]()
+
+    def test_database_url_retains_provider_tls_settings(self):
+        from psycopg.rows import dict_row
+
+        url = "postgresql://example.invalid/example?sslmode=verify-full"
+        module = load_app({"SECRET_KEY": secrets.token_hex(32), "DATABASE_URL": url})
+        with patch("psycopg.connect") as connect:
+            module["get_conn"]()
+        connect.assert_called_once_with(url, row_factory=dict_row, connect_timeout=10)
 
 
 class RepositoryHygieneTests(unittest.TestCase):
