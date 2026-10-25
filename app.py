@@ -5,6 +5,7 @@ from flask import (
 from flask_bcrypt import Bcrypt
 import click
 import psycopg
+from psycopg.conninfo import conninfo_to_dict
 from psycopg.rows import dict_row
 import os, re, calendar as pycal
 import secrets
@@ -45,6 +46,31 @@ app.config["DEMO_MAX_WORKSPACES"] = 20
 if app.config["DEMO_ONLY"] and not app.config["DEMO_ENABLED"]:
     raise RuntimeError("DEMO_ONLY requires DEMO_ENABLED=true.")
 
+# Hosted demos use HTTPS cookies; ordinary local development still uses HTTP.
+app.config["APP_ENV"] = os.getenv("APP_ENV", "development")
+if app.config["APP_ENV"] not in {"development", "production"}:
+    raise RuntimeError("APP_ENV must be development or production.")
+production = app.config["APP_ENV"] == "production"
+app.config.update(
+    DEBUG=False,
+    SESSION_COOKIE_SECURE=production,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    MAX_CONTENT_LENGTH=64 * 1024,
+    MAX_FORM_PARTS=32,
+)
+if production:
+    if not (app.config["DEMO_ENABLED"] and app.config["DEMO_ONLY"]):
+        raise RuntimeError("Public hosting requires DEMO_ENABLED=true and DEMO_ONLY=true.")
+    if len(app.secret_key.strip()) < 32:
+        raise RuntimeError("Production SECRET_KEY must contain at least 32 random characters.")
+    try:
+        database_settings = conninfo_to_dict(app.config["DATABASE_URL"])
+    except psycopg.Error:
+        raise RuntimeError("Set DATABASE_URL to a valid private PostgreSQL connection URL.") from None
+    if database_settings.get("sslmode") not in {"require", "verify-ca", "verify-full"}:
+        raise RuntimeError("Production DATABASE_URL must require TLS using sslmode.")
+
 # -----------------------
 # DB connection helper
 # -----------------------
@@ -67,12 +93,17 @@ def get_conn():
         raise
 
 
+def initialize_database():
+    """Create missing tables without copying or deleting anyone's records."""
+    with get_base_conn() as conn:
+        conn.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
+        conn.execute(Path(__file__).with_name("demo_registry.sql").read_text(encoding="utf-8"))
+
+
 @app.cli.command("init-db")
 def init_db():
     """Create missing PostgreSQL tables without deleting existing records."""
-    with get_conn() as conn:
-        conn.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
-        conn.execute(Path(__file__).with_name("demo_registry.sql").read_text(encoding="utf-8"))
+    initialize_database()
     click.echo("Database tables are ready.")
 
 
@@ -115,7 +146,7 @@ def demo_expired(_):
 def protect_demo_workspace():
     # Missing assets (for example a browser's favicon request) must not clear
     # the form token or login cookie established by the page that just loaded.
-    if request.endpoint is None or request.endpoint == "static":
+    if request.endpoint is None or request.endpoint in {"static", "health"}:
         return None
     demo_id = session.get("demo_workspace")
     if demo_id:
@@ -320,6 +351,12 @@ def fetch_upcoming_for_student(user_id: int, limit: int = 10):
 # -----------------------
 # Routes
 # -----------------------
+@app.route("/health")
+def health():
+    # Liveness only: frequent host checks must not keep the free database awake.
+    return {"status": "ok"}
+
+
 @app.route("/")
 def home():
     if session.get("user_id"):
@@ -893,4 +930,4 @@ def _404(_):
 # Run
 # -----------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
