@@ -1,0 +1,23 @@
+# One ongoing Free web service. The database is a separate Neon Free project.
+# No paid instance, disk, scheduled job, or trial database is provisioned here.
+services:
+  - type: web
+    name: exam-registration-demo
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: python -m pip install -r requirements.txt
+    startCommand: python serve.py
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEMO_ENABLED
+        value: "true"
+      - key: DEMO_ONLY
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
