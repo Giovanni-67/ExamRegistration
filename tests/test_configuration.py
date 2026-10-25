@@ -80,6 +80,10 @@ class SecretKeyTests(unittest.TestCase):
 
 
 class DatabaseConfigurationTests(unittest.TestCase):
+    def test_demo_only_requires_demo_entry_to_be_enabled(self):
+        with self.assertRaisesRegex(RuntimeError, "DEMO_ONLY"):
+            load_app({"SECRET_KEY": secrets.token_hex(32), "DEMO_ONLY": "true"})
+
     def test_missing_database_url_has_a_safe_setup_error(self):
         module = load_app({"SECRET_KEY": secrets.token_hex(32)})
         with self.assertRaisesRegex(RuntimeError, "Set DATABASE_URL"):

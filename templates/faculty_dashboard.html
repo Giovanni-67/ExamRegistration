@@ -3,6 +3,7 @@
 <head>
     <!-- Character encoding for proper text rendering -->
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Page title shown in browser tab -->
     <title>Faculty Dashboard</title>
@@ -12,9 +13,12 @@
 
     <!-- Page-specific CSS styling -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/faculty_dashboard.css') }}">
+  <!-- Shared demo controls; regular account pages keep their usual layout. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}" />
 </head>
 
 <body>
+  {% include "demo_banner.html" %}
 
 <!-- ================= HEADER / TOOLBAR ================= -->
 <div class="csn-header">
@@ -26,7 +30,7 @@
     <div>Faculty Dashboard</div>
 
     <!-- Right-aligned toolbar controls -->
-    <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+    <div class="faculty-actions">
 
         <!-- Dark mode toggle button -->
         <div class="toggle-btn" onclick="toggleDarkMode()">
@@ -39,9 +43,9 @@
         </a>
 
         <!-- Logout link -->
-        <a class="toolbar-btn" href="{{ url_for('logout') }}">
+        {% if not session.get('demo_workspace') %}<a class="toolbar-btn" href="{{ url_for('logout') }}">
             Logout
-        </a>
+        </a>{% endif %}
     </div>
 </div>
 
@@ -54,22 +58,22 @@
         <div class="stat-value">{{ total }}</div>
     </div>
 
-    <!-- Confirmed registrations -->
+    <!-- Active bookings include upcoming and past appointments that were not cancelled. -->
     <div class="stat-card">
-        <div class="stat-title">Confirmed</div>
-        <div class="stat-value">{{ confirmed }}</div>
+        <div class="stat-title">Active Bookings</div>
+        <div class="stat-value">{{ active }}</div>
     </div>
 
-    <!-- Pending registrations -->
+    <!-- Cancelled bookings remain in the history instead of disappearing. -->
     <div class="stat-card">
-        <div class="stat-title">Pending</div>
-        <div class="stat-value">{{ pending }}</div>
+        <div class="stat-title">Cancelled</div>
+        <div class="stat-value">{{ cancelled }}</div>
     </div>
 
-    <!-- Registrations occurring this week -->
+    <!-- Active appointments scheduled in the next seven days. -->
     <div class="stat-card">
-        <div class="stat-title">This Week</div>
-        <div class="stat-value">{{ this_week }}</div>
+        <div class="stat-title">Next 7 Days</div>
+        <div class="stat-value">{{ next_week }}</div>
     </div>
 </div>
 
@@ -107,6 +111,9 @@
     </div>
 
     <!-- Calendar grid layout -->
+    {% if session.get('demo_workspace') and not by_day %}
+    <p class="muted" style="padding: 1rem 4%;">No appointments scheduled for this month.</p>
+    {% endif %}
     <div class="cal-grid">
 
         <!-- Day-of-week headers -->
@@ -173,6 +180,7 @@
 
     <!-- Sidebar title -->
     <h3>Upcoming Sessions</h3>
+    <p class="muted">Next 30 days, up to 10 sessions</p>
 
     <!-- List upcoming exam sessions -->
     {% if upcoming %}

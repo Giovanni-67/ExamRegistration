@@ -1,0 +1,140 @@
+/* Demo-only controls reuse each page's colors without changing the shared base CSS. */
+.demo-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2% 0;
+    padding: 1rem 3%;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--csn-gold);
+    border-radius: 10px;
+    background: var(--card-bg);
+    color: var(--fg);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.demo-banner p {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+}
+
+/* Wrap controls instead of squeezing their labels on smaller screens. */
+.demo-controls, .demo-entry-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.demo-controls form, .demo-entry-actions form {
+    margin: 0;
+}
+
+.demo-controls button, .demo-entry-actions button {
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--fg);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.demo-controls button:hover, .demo-entry-actions button:hover {
+    border-color: var(--csn-blue);
+}
+
+.demo-controls button:focus-visible, .demo-entry-actions button:focus-visible {
+    outline: 3px solid var(--csn-gold);
+    outline-offset: 3px;
+}
+
+/* Keep the home-page demo choices together and centered. */
+.demo-entry {
+    margin: 3% 0;
+    text-align: center;
+}
+
+.demo-entry h2 {
+    font-size: 1.6rem;
+    margin: 0 0 1rem;
+}
+
+.demo-entry p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.demo-entry-actions {
+    justify-content: center;
+}
+
+.demo-entry .demo-entry-actions button {
+    padding: 1rem 1.5rem;
+}
+
+/* Preserve the existing faculty toolbar while allowing it to wrap. */
+.faculty-actions {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Weekday headings should not take the height reserved for appointment cells. */
+.demo-banner ~ .grid .dow {
+    min-height: 0;
+    padding: 0.65rem 1%;
+}
+
+.demo-banner ~ .grid .session {
+    overflow-wrap: anywhere;
+}
+
+/* Demo calendars use a readable agenda on tablets and phones instead of
+   clipping seven narrow weekday columns. The desktop month grid stays intact. */
+@media (max-width: 900px) {
+    .demo-banner ~ .csn-header {
+        flex-wrap: wrap;
+    }
+
+    .demo-banner ~ .grid .cal-grid {
+        display: block;
+    }
+
+    .demo-banner ~ .grid .dow,
+    .demo-banner ~ .grid .cell:not(:has(.session)) {
+        display: none;
+    }
+
+    .demo-banner ~ .grid .cell {
+        min-height: 0;
+        padding: 1rem 4%;
+        border-right: 0;
+    }
+
+    .demo-banner ~ .grid .cal-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .demo-banner {
+        padding: 1rem 4%;
+    }
+
+    .demo-controls, .demo-entry-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .demo-controls button, .demo-entry-actions button {
+        width: 100%;
+    }
+}
