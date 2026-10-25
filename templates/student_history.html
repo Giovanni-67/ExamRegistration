@@ -18,8 +18,11 @@
 
   <!-- Load page-specific styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/student_history.css') }}" />
+  <!-- Shared demo controls; regular account pages keep their usual layout. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}" />
 </head>
 <body>
+  {% include "demo_banner.html" %}
 
   <!-- Dark mode toggle switch, positioned top-right -->
   <div class="toggle-container">
@@ -36,7 +39,7 @@
       <!-- Link to student_dashboard route -->
       <a class="btn" href="{{ url_for('student_dashboard') }}">&larr; Back to Calendar</a>
       <!-- Link to logout route -->
-      <a class="btn" href="{{ url_for('logout') }}">Logout</a>
+      {% if not session.get('demo_workspace') %}<a class="btn" href="{{ url_for('logout') }}">Logout</a>{% endif %}
     </div>
   </div>
 

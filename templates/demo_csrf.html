@@ -1,0 +1,4 @@
+{% if session.get('demo_workspace') %}
+<!-- Confirms that this form was opened in the visitor's own demo session. -->
+<input type="hidden" name="demo_csrf" value="{{ demo_csrf_token() }}">
+{% endif %}

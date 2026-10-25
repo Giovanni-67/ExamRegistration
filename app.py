@@ -1,12 +1,13 @@
 from flask import (
     Flask, render_template, request, redirect,
-    url_for, flash, session, abort
+    url_for, flash, session, abort, has_request_context
 )
 from flask_bcrypt import Bcrypt
 import click
 import psycopg
 from psycopg.rows import dict_row
 import os, re, calendar as pycal
+import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
@@ -15,6 +16,10 @@ from functools import wraps
 from datetime import datetime, date, time, timedelta
 import calendar as cal
 from flask import render_template, request, session, redirect, url_for, flash
+from demo import (
+    DemoExpired, DemoLimit, bind_workspace, cleanup_expired,
+    create_workspace, delete_workspace, find_workspace,
+)
 
 # -----------------------
 # Load .env next to this file
@@ -34,11 +39,16 @@ if not app.secret_key or not app.secret_key.strip() or app.secret_key.strip() ==
     )
 bcrypt = Bcrypt(app)
 app.config["DATABASE_URL"] = os.getenv("DATABASE_URL", "")
+app.config["DEMO_ENABLED"] = os.getenv("DEMO_ENABLED", "false").lower() == "true"
+app.config["DEMO_ONLY"] = os.getenv("DEMO_ONLY", "false").lower() == "true"
+app.config["DEMO_MAX_WORKSPACES"] = 20
+if app.config["DEMO_ONLY"] and not app.config["DEMO_ENABLED"]:
+    raise RuntimeError("DEMO_ONLY requires DEMO_ENABLED=true.")
 
 # -----------------------
 # DB connection helper
 # -----------------------
-def get_conn():
+def get_base_conn():
     database_url = app.config["DATABASE_URL"]
     if not database_url.strip():
         raise RuntimeError("Set DATABASE_URL in your private .env or hosting environment.")
@@ -46,12 +56,144 @@ def get_conn():
     return psycopg.connect(database_url, row_factory=dict_row, connect_timeout=10)
 
 
+def get_conn():
+    conn = get_base_conn()
+    try:
+        if has_request_context() and session.get("demo_workspace"):
+            bind_workspace(conn, session["demo_workspace"])
+        return conn
+    except Exception:
+        conn.close()
+        raise
+
+
 @app.cli.command("init-db")
 def init_db():
     """Create missing PostgreSQL tables without deleting existing records."""
     with get_conn() as conn:
         conn.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
+        conn.execute(Path(__file__).with_name("demo_registry.sql").read_text(encoding="utf-8"))
     click.echo("Database tables are ready.")
+
+
+@app.cli.command("cleanup-demos")
+def cleanup_demos():
+    """Delete expired fictional workspaces; leave regular accounts untouched."""
+    with get_base_conn() as conn:
+        count = cleanup_expired(conn)
+    click.echo(f"Removed {count} expired demo workspace(s).")
+
+
+def demo_csrf_token():
+    if "demo_csrf" not in session:
+        session["demo_csrf"] = secrets.token_urlsafe(32)
+    return session["demo_csrf"]
+
+
+@app.context_processor
+def demo_template_context():
+    return {"demo_enabled": app.config["DEMO_ENABLED"], "demo_only": app.config["DEMO_ONLY"],
+            "demo_csrf_token": demo_csrf_token}
+
+
+@app.after_request
+def prevent_demo_page_caching(response):
+    # Demo pages contain a visitor-specific form token and temporary records.
+    if session.get("demo_workspace") or (app.config["DEMO_ENABLED"] and request.endpoint == "home"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.errorhandler(DemoExpired)
+def demo_expired(_):
+    session.clear()
+    flash("Your demo has expired. Start a new demo to explore again.", "info")
+    return redirect(url_for("home"))
+
+
+@app.before_request
+def protect_demo_workspace():
+    # Missing assets (for example a browser's favicon request) must not clear
+    # the form token or login cookie established by the page that just loaded.
+    if request.endpoint is None or request.endpoint == "static":
+        return None
+    demo_id = session.get("demo_workspace")
+    if demo_id:
+        if not app.config["DEMO_ENABLED"]:
+            return demo_expired(None)
+        with get_base_conn() as conn:
+            if not find_workspace(conn, demo_id):
+                return demo_expired(None)
+    # Every demo write, including reset/role changes, needs a same-session token.
+    lifecycle = request.endpoint in {"demo_start", "demo_reset", "demo_exit"}
+    if request.method == "POST" and (demo_id or lifecycle):
+        expected = session.get("demo_csrf", "")
+        supplied = request.form.get("demo_csrf", "")
+        if not expected or not secrets.compare_digest(expected.encode("utf-8"), supplied.encode("utf-8")):
+            abort(403)
+    if demo_id and request.endpoint in {"login", "signup"}:
+        return redirect(url_for("student_dashboard" if session["role"] == "student" else "faculty_dashboard"))
+    if app.config["DEMO_ONLY"] and not demo_id and request.endpoint not in {"home", "demo_start", "static"}:
+        session.clear()
+        flash("Choose a demo to explore with fictional data. No account is needed.", "info")
+        return redirect(url_for("home"))
+
+
+def enter_demo(workspace, role):
+    session.clear()
+    session["demo_workspace"] = str(workspace["id"])
+    session["user_id"] = workspace[role + "_id"]
+    session["role"] = role
+    session["user_name"] = "Demo Student" if role == "student" else "Demo Faculty"
+    demo_csrf_token()
+    return redirect(url_for("student_dashboard" if role == "student" else "faculty_dashboard"))
+
+
+@app.route("/demo/start/<role>", methods=["POST"])
+def demo_start(role):
+    if not app.config["DEMO_ENABLED"] or role not in {"student", "faculty"}:
+        abort(404)
+    try:
+        with get_base_conn() as conn:
+            workspace = find_workspace(conn, session["demo_workspace"], lock=True) if session.get("demo_workspace") else None
+            if not workspace:
+                password_hash = bcrypt.generate_password_hash(secrets.token_hex(32)).decode("utf-8")
+                workspace = create_workspace(conn, password_hash, app.config["DEMO_MAX_WORKSPACES"])
+        return enter_demo(workspace, role)
+    except DemoLimit:
+        flash("All demo spaces are currently in use. Please try again later.", "info")
+    except psycopg.Error:
+        flash("The demo is temporarily unavailable. Please try again.", "error")
+    return redirect(url_for("home"))
+
+
+@app.route("/demo/reset", methods=["POST"])
+def demo_reset():
+    if not app.config["DEMO_ENABLED"] or not session.get("demo_workspace"):
+        abort(403)
+    try:
+        with get_base_conn() as conn:
+            delete_workspace(conn, session["demo_workspace"])
+            password_hash = bcrypt.generate_password_hash(secrets.token_hex(32)).decode("utf-8")
+            workspace = create_workspace(conn, password_hash, app.config["DEMO_MAX_WORKSPACES"])
+        return enter_demo(workspace, session["role"])
+    except (psycopg.Error, DemoLimit):
+        flash("Your demo could not be reset. Please try again.", "error")
+        return redirect(url_for("home"))
+
+
+@app.route("/demo/exit", methods=["POST"])
+def demo_exit():
+    if not app.config["DEMO_ENABLED"] or not session.get("demo_workspace"):
+        abort(403)
+    try:
+        with get_base_conn() as conn:
+            delete_workspace(conn, session["demo_workspace"])
+    except psycopg.Error:
+        flash("Your demo could not be closed. Please try again.", "error")
+        return redirect(url_for("home"))
+    session.clear()
+    return redirect(url_for("home"))
 
 # -----------------------
 # Email rules
@@ -118,6 +260,7 @@ def fetch_sessions_between(start_dt: datetime, end_dt: datetime, user_id: int | 
             es.id,
             e.exam_code,
             es.session_datetime,
+            es.duration_minutes,
             l.campus_name, l.building_name, l.room_number,
             es.capacity,
             COUNT(r.id) AS booked
@@ -644,17 +787,34 @@ def faculty_dashboard(year, month):
     now = datetime.now()
     year = year or now.year
     month = month or now.month
+    if not 1 <= month <= 12 or not 1 <= year <= 9998:
+        abort(400)
 
     start_dt, end_dt = month_bounds(year, month)
     sessions = fetch_sessions_between(start_dt, end_dt)
+    upcoming = fetch_sessions_between(now, now + timedelta(days=30))[:10]
+    for exam_session in sessions + upcoming:
+        start = exam_session["session_datetime"]
+        exam_session["time_str"] = start.strftime("%I:%M %p")
+        exam_session["end_str"] = (start + timedelta(minutes=exam_session["duration_minutes"])).strftime("%I:%M %p")
+
+    with get_conn() as conn:
+        counts = conn.execute("""
+            SELECT COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE NOT r.cancelled) AS active,
+                   COUNT(*) FILTER (WHERE r.cancelled) AS cancelled,
+                   COUNT(*) FILTER (WHERE NOT r.cancelled AND es.session_datetime >= LOCALTIMESTAMP
+                       AND es.session_datetime < LOCALTIMESTAMP + INTERVAL '7 days') AS next_week
+            FROM registrations r JOIN examsessions es ON es.id = r.session_id
+        """).fetchone()
 
     by_day = {}
     for s in sessions:
         iso = s["session_datetime"].strftime("%Y-%m-%d")
         by_day.setdefault(iso, []).append(s)
 
-    prev_month_dt = (datetime(year, month, 15) - timedelta(days=31))
-    next_month_dt = (datetime(year, month, 15) + timedelta(days=31))
+    prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
+    next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
 
     return render_template(
         "faculty_dashboard.html",
@@ -662,10 +822,12 @@ def faculty_dashboard(year, month):
         month=month,
         cal=pycal,
         by_day=by_day,
-        prev_year=prev_month_dt.year,
-        prev_month=prev_month_dt.month,
-        next_year=next_month_dt.year,
-        next_month=next_month_dt.month,
+        upcoming=upcoming,
+        **counts,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month,
     )
 
 @app.route("/faculty/sessions/new", methods=["GET", "POST"])
@@ -673,36 +835,35 @@ def faculty_dashboard(year, month):
 @faculty_required
 def faculty_new_session():
     if request.method == "POST":
-        exam_id   = int(request.form.get("exam_id", "0"))
-        location_id = int(request.form.get("location_id", "0"))
-        date_str  = request.form.get("date")   # YYYY-MM-DD
-        time_str  = request.form.get("time")   # HH:MM
-        capacity  = int(request.form.get("capacity", "20"))
-
         try:
-            dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-        except Exception:
-            flash("Invalid date or time.", "error")
-            return redirect(url_for("faculty_new_session"))
-
-        conn = get_conn()
-        cur = conn.cursor()
-        try:
-            cur.execute(
-                """
-                INSERT INTO examsessions (exam_id, session_datetime, location_id, creator_id, proctor_id, capacity)
-                VALUES (%s,%s,%s,%s,%s,%s)
-                """,
-                (exam_id, dt, location_id, session.get("user_id"), session.get("user_id"), capacity),
-            )
-            conn.commit()
-            flash("Exam session created.", "success")
-            return redirect(url_for("faculty_dashboard"))
-        except psycopg.Error:
-            conn.rollback()
-            flash("Could not create the session. Check the details and try again.", "error")
-        finally:
-            cur.close(); conn.close()
+            exam_id = int(request.form.get("exam_id", "0"))
+            location_id = int(request.form.get("location_id", "0"))
+            capacity = int(request.form.get("capacity", "20"))
+            duration = int(request.form.get("duration_minutes", "90"))
+            dt = datetime.strptime(f"{request.form.get('date')} {request.form.get('time')}", "%Y-%m-%d %H:%M")
+            if not all(0 < value <= 2147483647 for value in (exam_id, location_id, capacity)) or not 15 <= duration <= 1440:
+                raise ValueError()
+        except (ValueError, TypeError):
+            flash("Choose an exam, location, date, positive capacity, and a duration from 15 to 1440 minutes.", "error")
+        else:
+            try:
+                with get_conn() as conn:
+                    if session.get("demo_workspace"):
+                        # Bound demo growth even if multiple Create requests arrive together.
+                        conn.execute("SELECT id FROM users WHERE id=%s FOR UPDATE", (session["user_id"],))
+                        count = conn.execute("SELECT COUNT(*) AS count FROM examsessions").fetchone()["count"]
+                        if count >= 50:
+                            flash("This demo has reached 50 sessions. Reset your demo to start again.", "info")
+                            return redirect(url_for("faculty_dashboard"))
+                    conn.execute(
+                        """INSERT INTO examsessions (exam_id,session_datetime,location_id,creator_id,proctor_id,capacity,duration_minutes)
+                           VALUES (%s,%s,%s,%s,%s,%s,%s)""",
+                        (exam_id, dt, location_id, session["user_id"], session["user_id"], capacity, duration),
+                    )
+                flash("Exam session created.", "success")
+                return redirect(url_for("faculty_dashboard"))
+            except psycopg.Error:
+                flash("Could not create the session. Check the details and try again.", "error")
 
     # GET: load exams & locations for form
     conn = get_conn()

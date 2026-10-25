@@ -1,0 +1,23 @@
+{% if session.get('demo_workspace') %}
+<!-- Demo controls use private sample data. Every button affects only this visit. -->
+<aside class="demo-banner" aria-label="Demo workspace">
+  <div>
+    <strong>Portfolio demo &middot; {{ session.get('role')|capitalize }} view</strong>
+    <p>Fictional data in your own workspace. Expires two hours after starting.</p>
+  </div>
+  <div class="demo-controls">
+    <form method="post" action="{{ url_for('demo_start', role='faculty' if session.get('role') == 'student' else 'student') }}">
+      <input type="hidden" name="demo_csrf" value="{{ demo_csrf_token() }}">
+      <button type="submit">Switch to {{ 'faculty' if session.get('role') == 'student' else 'student' }}</button>
+    </form>
+    <form method="post" action="{{ url_for('demo_reset') }}">
+      <input type="hidden" name="demo_csrf" value="{{ demo_csrf_token() }}">
+      <button type="submit">Reset my demo</button>
+    </form>
+    <form method="post" action="{{ url_for('demo_exit') }}">
+      <input type="hidden" name="demo_csrf" value="{{ demo_csrf_token() }}">
+      <button type="submit">Exit demo</button>
+    </form>
+  </div>
+</aside>
+{% endif %}

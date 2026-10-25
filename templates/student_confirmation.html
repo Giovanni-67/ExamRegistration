@@ -20,8 +20,11 @@
   <!-- Load global + page-specific styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/student_confirmation.css') }}" />
+  <!-- Shared demo controls; regular account pages keep their usual layout. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}" />
 </head>
 <body>
+  {% include "demo_banner.html" %}
 
   <!-- Dark mode toggle switch (top-right) -->
   <div class="toggle-container">

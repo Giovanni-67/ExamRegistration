@@ -33,7 +33,20 @@ Use Python 3.12 and PostgreSQL 16 or newer. DBeaver can manage the PostgreSQL da
 
    Open the local URL printed by Flask. Activate the virtual environment each time you open a new terminal.
 
-`init-db` creates missing tables and indexes without deleting existing records. It does not upgrade an older schema or import MySQL data. An empty database has no exams or locations yet; fictional recruiter-demo data will be added in the next development milestone.
+`init-db` creates missing tables and indexes without deleting existing records. It does not upgrade an older schema or import MySQL data. Regular account tables start empty; demos create their own fictional sample records.
+
+## Recruiter demos
+
+After configuring PostgreSQL and running `flask --app app init-db`, set `DEMO_ENABLED=true` in your private `.env` and restart the app. The home page offers **Try Student Demo** and **Try Faculty Demo**, with no signup or shared password needed.
+
+- Each visitor gets separate PostgreSQL tables in a temporary schema. Demo queries cannot fall back to regular application tables.
+- Both role views share that visitor's workspace. Book or cancel as a student, switch to faculty to create an exam session, then switch back to see it.
+- All records are fictional. Sample dates are relative to the day the demo starts; history includes a past appointment and a cancelled booking.
+- The banner includes role switching, **Reset my demo**, and **Exit demo**. Reset replaces only that visitor's records. Exit removes that workspace immediately.
+- A workspace expires two hours after creation. New demo starts remove expired workspaces, and the `flask --app app cleanup-demos` command can also remove them. Cleanup runs on demand, not on a paid scheduler.
+- At most 20 workspaces can exist at once, and each demo is limited to 50 exam sessions. Visitors see a message if the demo is full. Expired data may remain stored until the next cleanup, but expired sessions cannot access it.
+
+Use `DEMO_ONLY=true` together with `DEMO_ENABLED=true` for a public portfolio deployment. This hides account signup/login and prevents visitors from submitting personal signup information. Leave both false for the regular local account workflow. The PostgreSQL account needs permission to create and drop schemas in the configured database; demos do not need a separate database service or a paid plan.
 
 ## Private configuration
 

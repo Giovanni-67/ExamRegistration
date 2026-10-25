@@ -17,8 +17,7 @@ from psycopg.rows import dict_row
 from test_configuration import ROOT, load_app
 
 
-@unittest.skipUnless(os.getenv("TEST_DATABASE_URL"), "Set TEST_DATABASE_URL for PostgreSQL integration tests")
-class PostgreSQLTests(unittest.TestCase):
+class PostgreSQLFixture:
     @classmethod
     def setUpClass(cls):
         cls.base_url = os.environ["TEST_DATABASE_URL"]
@@ -33,6 +32,7 @@ class PostgreSQLTests(unittest.TestCase):
         cls.password_hash = cls.module["bcrypt"].generate_password_hash(cls.password).decode()
         with cls.connect() as conn:
             conn.execute((ROOT / "schema.sql").read_text(encoding="utf-8"))
+            conn.execute((ROOT / "demo_registry.sql").read_text(encoding="utf-8"))
 
     @classmethod
     def tearDownClass(cls):
@@ -86,6 +86,8 @@ class PostgreSQLTests(unittest.TestCase):
                 "SELECT COUNT(*) AS count FROM registrations WHERE session_id=%s AND NOT cancelled", (session_id,)
             ).fetchone()["count"]
 
+@unittest.skipUnless(os.getenv("TEST_DATABASE_URL"), "Set TEST_DATABASE_URL for PostgreSQL integration tests")
+class PostgreSQLTests(PostgreSQLFixture, unittest.TestCase):
     def test_schema_can_be_initialized_twice_without_losing_records(self):
         for _ in range(2):
             result = self.app.test_cli_runner().invoke(args=["init-db"])
